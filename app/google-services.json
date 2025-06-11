@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332618593014",
+    "project_id": "fir-prm",
+    "storage_bucket": "fir-prm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332618593014:android:f729a27e0536ef579772d7",
+        "android_client_info": {
+          "package_name": "com.example.prm232rj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZD0SDxf42OjI7EtgeUVzPodfhZQwyfUc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
