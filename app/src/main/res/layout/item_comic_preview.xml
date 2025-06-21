@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="item"
+            type="com.example.prm232rj.data.dto.ComicDtoPreview" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- Cover Image -->
+        <ImageView
+            android:id="@+id/ivComicCover"
+            android:layout_width="120dp"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@{item.title}"
+            app:imageUrl="@{item.coverImage}" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvComicTitle"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@{item.title}"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Status + Rating -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:gravity="start|center_vertical">
+
+            <TextView
+                android:id="@+id/tvComicStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{item.status}'
+                android:textColor="@android:color/black"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:textSize="12sp"
+                android:layout_marginEnd="4dp"/>
+
+            <TextView
+                android:id="@+id/tvComicRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{"rate: " + item.rating}'
+                android:textColor="@android:color/black"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>
