@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
+import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.repository.ComicRepository;
 
 import java.util.List;
@@ -35,10 +36,30 @@ public class ComicViewModel extends ViewModel {
     }
 
     public void loadBanners() {
-        repository.getComicBanners(bannerList::postValue);
+        repository.getComicBanners(new ComicRemoteDataSource.FirebaseCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoBanner> result) {
+                bannerList.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Log hoặc xử lý lỗi
+            }
+        });
     }
 
     public void loadPreviews() {
-        repository.getComicPreviews(previewList::postValue);
+        repository.getComicPreviews(new ComicRemoteDataSource.FirebaseCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoPreview> result) {
+                previewList.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Log hoặc xử lý lỗi
+            }
+        });
     }
 }

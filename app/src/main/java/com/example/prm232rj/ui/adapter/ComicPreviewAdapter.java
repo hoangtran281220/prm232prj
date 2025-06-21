@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -7,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.prm232rj.data.dto.ComicDtoPreview;
+import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.ItemComicPreviewBinding;
 
 import java.util.ArrayList;
@@ -14,14 +16,14 @@ import java.util.List;
 
 public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapter.PreviewViewHolder> {
 
-    private List<ComicDtoPreview> previewList = new ArrayList<>();
+    private List<IComicPreview> previewList = new ArrayList<>();
 
-    public ComicPreviewAdapter(List<ComicDtoPreview> previewList) {
+    public ComicPreviewAdapter(List<IComicPreview> previewList) {
         this.previewList = previewList;
     }
 
-    public void setData(List<ComicDtoPreview> list) {
-        this.previewList = list;
+    public void setData(List<? extends IComicPreview> list) {
+        this.previewList = new ArrayList<>(list);
         notifyDataSetChanged();
     }
 
@@ -35,13 +37,14 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PreviewViewHolder holder, int position) {
-        ComicDtoPreview item = previewList.get(position);
+        IComicPreview item = previewList.get(position);
         holder.binding.setItem(item);
         holder.binding.executePendingBindings();
     }
 
     @Override
     public int getItemCount() {
+        Log.d("mytag","size: " + previewList.size());
         return previewList.size();
     }
 

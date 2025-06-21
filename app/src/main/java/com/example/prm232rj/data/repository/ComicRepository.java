@@ -2,7 +2,10 @@ package com.example.prm232rj.data.repository;
 
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
+import com.example.prm232rj.data.dto.ComicDtoWithTags;
 import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,5 +24,9 @@ public class ComicRepository {
     // Lấy danh sách preview truyện
     public void getComicPreviews(ComicRemoteDataSource.FirebaseCallback<ComicDtoPreview> callback) {
         remoteDataSource.getComicPreviews(callback);
+    }
+
+    public void getComicsByTagIds(List<String> tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
 }

@@ -30,18 +30,42 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_gravity="center_horizontal" />
 
-            <!-- Label -->
-            <TextView
-                android:text="Chương mới nhất"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:padding="16dp"
+            <!-- Row: Title + Xem tất cả -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="4dp"
+                android:gravity="center_vertical"
+                android:baselineAligned="false">
 
-            <!-- Horizontal list truyện mới -->
+                <TextView
+                    android:id="@+id/tvHotLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Truyện Hot"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnSeeAllHot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xem tất cả >"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:padding="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- Horizontal list truyện Hot -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/latestComicsRecyclerView"
                 android:layout_width="match_parent"

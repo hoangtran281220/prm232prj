@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.screen.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentHomeBinding;
 import com.example.prm232rj.ui.adapter.ComicBannerPagerAdapter;
 import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
+import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
@@ -93,12 +95,24 @@ public class HomeFragment extends Fragment {
         setupPreview();
 
         observeViewModel();
+        binding.btnSeeAllHot.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), ComicListActivity.class);
+            intent.putExtra("TAG_ID", "4"); // ví dụ: 8 = "Kinh Dị"
+            intent.putExtra("TAG_NAME", "Hành Động");
+            startActivity(intent);
+        });
     }
 
     private void setupBanner() {
         bannerAdapter = new ComicBannerPagerAdapter();
         binding.bannerViewPager.setAdapter(bannerAdapter);
         binding.bannerDots.setViewPager2(binding.bannerViewPager);
+
+        // Chặn ViewPager2 cha intercept gesture vuốt ngang
+        binding.bannerViewPager.getChildAt(0).setOnTouchListener((v, event) -> {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
     }
 
     private void setupPreview() {
