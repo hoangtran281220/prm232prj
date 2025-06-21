@@ -3,8 +3,10 @@ package com.example.prm232rj.data.firebase;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,16 +24,21 @@ public class ComicRemoteDataSource {
         this.db = FirebaseFirestore.getInstance();
     }
     public void getComicBanners(FirebaseCallback<ComicDtoBanner> callback) {
-        db.collection("comics").get()
+        db.collection("comics")
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .limit(5)
+                .get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoBanner> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot) {
                         String image = doc.getString("CoverImage");
                         String title = doc.getString("Title");
-
+                        String id = doc.getId();
+                        Long viewsObj = doc.getLong("Views");
+                        long views = viewsObj != null ? viewsObj : 0;
                         if (image != null && !image.isEmpty() && title != null && !title.isEmpty())
                         {
-                            result.add(new ComicDtoBanner(image, title));
+                            result.add(new ComicDtoBanner(image, title, id, views));
                         }
                     }
                     callback.onComplete(result);
@@ -41,7 +48,11 @@ public class ComicRemoteDataSource {
     }
 
     public void getComicPreviews(FirebaseCallback<ComicDtoPreview> callback) {
-        db.collection("comics").get()
+        db.collection("comics")
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .limit(5)
+                .get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoPreview> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot) {
@@ -49,13 +60,16 @@ public class ComicRemoteDataSource {
                         String status = doc.getString("Status");
                         String cover = doc.getString("CoverImage");
                         String title = doc.getString("Title");
-
+                        String id = doc.getId();
+                        Timestamp timestamp = doc.getTimestamp("UpdatedAt");
                         if (rating != null && title != null && cover != null) {
                             result.add(new ComicDtoPreview(
                                     rating,
                                     title,
                                     cover,
-                                    status != null ? status : ""
+                                    status != null ? status : "",
+                                    id,
+                                    timestamp
                             ));
                         }
                     }

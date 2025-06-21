@@ -1,21 +1,33 @@
 package com.example.prm232rj.data.dto;
 
 import com.example.prm232rj.data.interfaces.IComicPreview;
+import com.google.firebase.Timestamp;
 
 public class ComicDtoPreview implements IComicPreview {
+        private String Id;
         private String Title;
         private String CoverImage;
         private String Status;
         private double Rating;
 
+        private Timestamp UpdatedAt;
+
         public ComicDtoPreview() {}
 
         // ✅ Constructor tiện cho tạo object bằng tay
-        public ComicDtoPreview(double rating, String title, String coverImage, String status) {
-                this.Title = title;
-                this.CoverImage = coverImage;
-                this.Status = status;
-                this.Rating = rating;
+        public ComicDtoPreview(double rating, String title, String coverImage,
+                               String status, String id, Timestamp updatedAt) {
+                Title = title;
+                CoverImage = coverImage;
+                Status = status;
+                Rating = rating;
+                Id = id;
+                UpdatedAt = updatedAt;
+        }
+
+        @Override
+        public String getId() {
+                return Id;
         }
 
         @Override
@@ -27,4 +39,15 @@ public class ComicDtoPreview implements IComicPreview {
         @Override
         public double getRating() { return Rating; }
 
+        public void setId(String id) {
+                Id = id;
+        }
+
+        public void setTitle(String title) {
+                Title = title;
+        }
+
+        public Timestamp getUpdatedAt() {
+                return UpdatedAt;
+        }
 }

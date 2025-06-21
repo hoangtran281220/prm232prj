@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp;
 import java.util.List;
 
 public class Comic {
+    private String id;
     private String Title;
     private String Description;
     private String CoverImage;
@@ -16,19 +17,21 @@ public class Comic {
     private Timestamp CreatedAt;
     private Timestamp UpdatedAt;
 
-    public Comic(String title, String description, String coverImage, String status,
-                 double rating, long views, List<String> tagId, String authorId,
-                 Timestamp createdAt, Timestamp updatedAt) {
+    public Comic(String id, String title, String description,
+                 Timestamp updatedAt, String coverImage, String status,
+                 double rating, long views, String authorId,
+                 List<String> tagId, Timestamp createdAt) {
+        this.id = id;
         Title = title;
         Description = description;
+        UpdatedAt = updatedAt;
         CoverImage = coverImage;
         Status = status;
         Rating = rating;
         Views = views;
-        TagId = tagId;
         AuthorId = authorId;
+        TagId = tagId;
         CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
     }
 
     public Comic() {
@@ -113,4 +116,14 @@ public class Comic {
     public void setUpdatedAt(Timestamp updatedAt) {
         UpdatedAt = updatedAt;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }
+
+

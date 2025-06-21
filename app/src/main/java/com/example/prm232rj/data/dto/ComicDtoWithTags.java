@@ -9,19 +9,28 @@ public class ComicDtoWithTags implements IComicPreview {
     private String CoverImage;
     private String Status;
     private double Rating;
+
+    private String Id;
     private List<String> tagIds;
 
     public ComicDtoWithTags() {
         // Firestore requires a public no-args constructor
     }
 
-    public ComicDtoWithTags(String title, String coverImage, String status, double rating, List<String> tagIds) {
+    public ComicDtoWithTags(String title, String coverImage, String status, double rating, List<String> tagIds, String id) {
         this.Title = title;
         this.CoverImage = coverImage;
         this.Status = status;
         this.Rating = rating;
         this.tagIds = tagIds;
+        this.Id = id;
     }
+
+    @Override
+    public String getId() {
+        return Id;
+    }
+
     @Override
     // Getters
     public String getTitle() {
@@ -62,5 +71,9 @@ public class ComicDtoWithTags implements IComicPreview {
 
     public void setTagIds(List<String> tagIds) {
         this.tagIds = tagIds;
+    }
+
+    public void setId(String id) {
+        Id = id;
     }
 }
