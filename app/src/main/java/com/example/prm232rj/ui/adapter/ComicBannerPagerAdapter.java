@@ -16,7 +16,7 @@ public class ComicBannerPagerAdapter extends RecyclerView.Adapter<ComicBannerPag
     private List<ComicDtoBanner> bannerList = new ArrayList<>();
 
     public void setData(List<ComicDtoBanner> list) {
-        this.bannerList = list;
+        this.bannerList = list != null ? list : new ArrayList<>();
         notifyDataSetChanged();
     }
 

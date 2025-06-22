@@ -17,10 +17,14 @@ import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentHomeBinding;
 import com.example.prm232rj.ui.adapter.ComicBannerPagerAdapter;
 import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
+import com.example.prm232rj.ui.adapter.HomeSectionAdapter;
+import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
+import com.example.prm232rj.ui.adapter.section.SectionViewType;
 import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,8 +44,9 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private ComicViewModel viewModel;
 
-    private ComicBannerPagerAdapter bannerAdapter;
-    private ComicPreviewAdapter previewAdapter;
+    private HomeSectionAdapter adapter;
+
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -90,49 +95,45 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
-
-        setupBanner();
-        setupPreview();
-
-        observeViewModel();
-        binding.btnSeeAllHot.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), ComicListActivity.class);
-            intent.putExtra("TAG_ID", "4"); // ví dụ: 8 = "Kinh Dị"
-            intent.putExtra("TAG_NAME", "Hành Động");
-            startActivity(intent);
-        });
+//        binding.btnSeeAllHot.setOnClickListener(v -> {
+//            Intent intent = new Intent(requireContext(), ComicListActivity.class);
+//            intent.putExtra("TAG_ID", "4"); // ví dụ: 8 = "Kinh Dị"
+//            intent.putExtra("TAG_NAME", "Hành Động");
+//            startActivity(intent);
+//        });
+        setupRecycler();
     }
 
-    private void setupBanner() {
-        bannerAdapter = new ComicBannerPagerAdapter();
-        binding.bannerViewPager.setAdapter(bannerAdapter);
-        binding.bannerDots.setViewPager2(binding.bannerViewPager);
+    private void setupRecycler() {
+        List<HomeSectionItem> sectionList = new ArrayList<>();
 
-        // Chặn ViewPager2 cha intercept gesture vuốt ngang
-        binding.bannerViewPager.getChildAt(0).setOnTouchListener((v, event) -> {
-            v.getParent().requestDisallowInterceptTouchEvent(true);
-            return false;
-        });
-    }
+        sectionList.add(new HomeSectionItem(SectionViewType.BANNER));
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện Hot"; sectionTag = "hot";
+        }});
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST));
 
-    private void setupPreview() {
-        previewAdapter = new ComicPreviewAdapter(new ArrayList<>());
-        binding.latestComicsRecyclerView.setLayoutManager(
-                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Hành động"; sectionTag = "action";
+        }});
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST));
+
+        // ➕ tiếp tục cho manhwa, manhua, romcom...
+
+        adapter = new HomeSectionAdapter(sectionList);
+        binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.homeRecyclerView.setAdapter(adapter);
+
+        viewModel.getBanners().observe(getViewLifecycleOwner(), banners ->
+                adapter.updateBannerSection(banners)
         );
-        binding.latestComicsRecyclerView.setAdapter(previewAdapter);
-    }
-
-    private void observeViewModel() {
-        viewModel.getBanners().observe(getViewLifecycleOwner(), banners -> {
-            bannerAdapter.setData(banners);
-        });
 
         viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
-            previewAdapter.setData(previews);
+            adapter.updateComicSection("hot", new ArrayList<>(previews));
         });
 
-        viewModel.loadBanners();  // trigger fetch
-        viewModel.loadPreviews(); // trigger fetch
+        viewModel.loadBanners();
+        viewModel.loadPreviews();
     }
+
 }

@@ -23,9 +23,14 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
     }
 
     public void setData(List<? extends IComicPreview> list) {
-        this.previewList = new ArrayList<>(list);
+        if (list != null) {
+            this.previewList = new ArrayList<>(list);
+        } else {
+            this.previewList = new ArrayList<>();
+        }
         notifyDataSetChanged();
     }
+
 
     @NonNull
     @Override
