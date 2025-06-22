@@ -13,60 +13,59 @@ public class Comic {
     private double Rating;
     private long Views;
     private List<String> TagId;
-    private String AuthorId;
+    private List<String> AuthorId;
     private Timestamp CreatedAt;
     private Timestamp UpdatedAt;
 
-    public Comic(String id, String title, String description,
-                 Timestamp updatedAt, String coverImage, String status,
-                 double rating, long views, String authorId,
-                 List<String> tagId, Timestamp createdAt) {
+    public Comic(String id, Timestamp updatedAt, Timestamp createdAt, List<String> authorId, List<String> tagId, long views, double rating, String status, String coverImage, String description, String title) {
         this.id = id;
-        Title = title;
-        Description = description;
         UpdatedAt = updatedAt;
-        CoverImage = coverImage;
-        Status = status;
-        Rating = rating;
-        Views = views;
+        CreatedAt = createdAt;
         AuthorId = authorId;
         TagId = tagId;
-        CreatedAt = createdAt;
+        Views = views;
+        Rating = rating;
+        Status = status;
+        CoverImage = coverImage;
+        Description = description;
+        Title = title;
     }
+
+
 
     public Comic() {
     }
 
-    public String getTitle() {
-        return Title;
+    public Timestamp getUpdatedAt() {
+        return UpdatedAt;
     }
 
-    public void setTitle(String title) {
-        Title = title;
+    public void setUpdatedAt(Timestamp updatedAt) {
+        UpdatedAt = updatedAt;
     }
 
-    public String getDescription() {
-        return Description;
+    public Timestamp getCreatedAt() {
+        return CreatedAt;
     }
 
-    public void setDescription(String description) {
-        Description = description;
+    public void setCreatedAt(Timestamp createdAt) {
+        CreatedAt = createdAt;
     }
 
-    public String getCoverImage() {
-        return CoverImage;
+    public List<String> getAuthorId() {
+        return AuthorId;
     }
 
-    public void setCoverImage(String coverImage) {
-        CoverImage = coverImage;
+    public void setAuthorId(List<String> authorId) {
+        AuthorId = authorId;
     }
 
-    public String getStatus() {
-        return Status;
+    public List<String> getTagId() {
+        return TagId;
     }
 
-    public void setStatus(String status) {
-        Status = status;
+    public void setTagId(List<String> tagId) {
+        TagId = tagId;
     }
 
     public long getViews() {
@@ -85,36 +84,36 @@ public class Comic {
         Rating = rating;
     }
 
-    public List<String> getTagId() {
-        return TagId;
+    public String getStatus() {
+        return Status;
     }
 
-    public void setTagId(List<String> tagId) {
-        TagId = tagId;
+    public void setStatus(String status) {
+        Status = status;
     }
 
-    public String getAuthorId() {
-        return AuthorId;
+    public String getCoverImage() {
+        return CoverImage;
     }
 
-    public void setAuthorId(String authorId) {
-        AuthorId = authorId;
+    public void setCoverImage(String coverImage) {
+        CoverImage = coverImage;
     }
 
-    public Timestamp getCreatedAt() {
-        return CreatedAt;
+    public String getDescription() {
+        return Description;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        CreatedAt = createdAt;
+    public void setDescription(String description) {
+        Description = description;
     }
 
-    public Timestamp getUpdatedAt() {
-        return UpdatedAt;
+    public String getTitle() {
+        return Title;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
-        UpdatedAt = updatedAt;
+    public void setTitle(String title) {
+        Title = title;
     }
 
     public String getId() {

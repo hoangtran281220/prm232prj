@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.adapter;
 
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -7,9 +8,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.ItemComicPreviewBinding;
+import com.example.prm232rj.ui.screen.Activities.ComicDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,11 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
         IComicPreview item = previewList.get(position);
         holder.binding.setItem(item);
         holder.binding.executePendingBindings();
+        holder.binding.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ComicDetailActivity.class);
+            intent.putExtra("COMIC_ID", item.getId()); // Truyền ID của truyện
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override

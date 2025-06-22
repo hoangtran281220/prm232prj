@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-  
-</selector>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Lớp màu trong suốt nền -->
+    <item>
+        <color android:color="@android:color/transparent" />
+    </item>
+
+    <!-- Lớp phủ gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#80000000"
+            android:endColor="#00000000"
+            android:angle="270"  />           <!-- 270 là từ dưới lên trên -->
+        </shape>
+    </item>
+
+</layer-list>

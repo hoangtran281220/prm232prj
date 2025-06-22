@@ -3,6 +3,7 @@ package com.example.prm232rj.data.firebase;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
+import com.example.prm232rj.data.model.Comic;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -104,6 +105,46 @@ public class ComicRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getRecentComics(int limit, FirebaseCallback<Comic> callback) {
+        db.collection("comics")
+                .orderBy("UpdatedAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(limit)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Comic> comics = new ArrayList<>();
+                    queryDocumentSnapshots.forEach(doc -> {
+                        Comic comic = doc.toObject(Comic.class);
+                        comic.setId(doc.getId());
+                        comics.add(comic);
+                    });
+                    callback.onComplete(comics);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+    // Thêm method để lấy comic theo ID
+    public void getComicById(String comicId, FirebaseCallback<Comic> callback) {
+        db.collection("comics")
+                .document(comicId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Comic comic = doc.toObject(Comic.class);
+                        if (comic != null) {
+                            comic.setId(doc.getId());
+                            List<Comic> result = new ArrayList<>();
+                            result.add(comic);
+                            callback.onComplete(result);
+                        } else {
+                            callback.onFailure(new Exception("Không thể chuyển đổi dữ liệu truyện"));
+                        }
+                    } else {
+                        callback.onFailure(new Exception("Không tìm thấy truyện với id: " + comicId));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
 
     public interface FirebaseCallback<T> {

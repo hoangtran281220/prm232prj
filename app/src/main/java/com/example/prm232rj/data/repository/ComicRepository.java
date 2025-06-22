@@ -4,6 +4,7 @@ import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
 import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
+import com.example.prm232rj.data.model.Comic;
 
 import java.util.List;
 
@@ -29,4 +30,10 @@ public class ComicRepository {
     public void getComicsByTagIds(List<String> tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
         remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
+    // Thêm method để lấy comic theo ID
+    public void getComicById(String comicId, ComicRemoteDataSource.FirebaseCallback<Comic> callback) {
+        remoteDataSource.getComicById(comicId, callback);
+    }
+
+
 }
