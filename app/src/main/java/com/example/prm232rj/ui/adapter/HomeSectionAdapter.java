@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import com.example.prm232rj.databinding.ItemComicsBannerBinding;
 import com.example.prm232rj.databinding.ItemSectionHeaderBinding;
 import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
 import com.example.prm232rj.ui.adapter.section.SectionViewType;
+import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 
 import java.util.List;
 
@@ -62,6 +64,7 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         } else if (holder instanceof ComicListViewHolder) {
             ((ComicListViewHolder) holder).bind(item.comics);
         }
+
     }
 
     public void updateBannerSection(List<ComicDtoBanner> banners) {
@@ -103,15 +106,36 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     static class SectionHeaderViewHolder extends RecyclerView.ViewHolder {
-        private final TextView title;
+        private final ItemSectionHeaderBinding binding;
+
 
         public SectionHeaderViewHolder(ItemSectionHeaderBinding binding) {
             super(binding.getRoot());
-            this.title = binding.tvSectionTitle;
+            this.binding = binding;
         }
 
         void bind(String titleText) {
-            title.setText(titleText);
+            binding.tvSectionTitle.setText(titleText);
+
+            // Tuỳ chỉnh logic theo title (hoặc dùng sectionTag nếu muốn chính xác hơn)
+            if (titleText.equals("Hành động")) {
+                binding.btnSeeAllHot.setOnClickListener(v -> {
+                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                    intent.putExtra("TAG_ID", "4"); // Gắn tag phù hợp
+                    intent.putExtra("TAG_NAME", "Hành Động");
+                    binding.getRoot().getContext().startActivity(intent);
+                });
+            } else if(titleText.equals("Truyện Hot")){
+                // Ẩn hoặc disable nếu không cần xử lý
+                binding.btnSeeAllHot.setOnClickListener(v->{
+                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                    intent.putExtra("TAG_NAME", "Truyện hot");
+                    binding.getRoot().getContext().startActivity(intent);
+                });
+
+            }else{
+                binding.btnSeeAllHot.setOnClickListener(null);
+            }
         }
     }
 
@@ -120,7 +144,9 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         public ComicListViewHolder(ItemComicListHorizontalBinding binding) {
             super(binding.getRoot());
-            binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.HORIZONTAL, false));
+            binding.recyclerView.setLayoutManager(
+                    new LinearLayoutManager(binding.getRoot().getContext(),
+                            LinearLayoutManager.HORIZONTAL, false));
             binding.recyclerView.setAdapter(adapter);
         }
 

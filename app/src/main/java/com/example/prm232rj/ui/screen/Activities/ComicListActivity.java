@@ -1,24 +1,18 @@
 package com.example.prm232rj.ui.screen.Activities;
 
 import android.os.Bundle;
-import android.widget.Toast;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.example.prm232rj.R;
-import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.databinding.ActivityComicListBinding;
 import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
-import com.example.prm232rj.ui.viewmodel.ComicListViewModel;
+import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.Collections;
-import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -28,7 +22,7 @@ public class ComicListActivity extends AppCompatActivity {
     public static final String EXTRA_TAG_NAME = "TAG_NAME"; // Optional
     private ActivityComicListBinding binding;
     private ComicPreviewAdapter adapter;
-    private ComicListViewModel viewModel;
+    private ComicViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +43,7 @@ public class ComicListActivity extends AppCompatActivity {
     }
 
     private void setupViewModel() {
-        viewModel = new ViewModelProvider(this).get(ComicListViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
 
         viewModel.getComics().observe(this, comics -> {
             adapter.setData(comics);
@@ -60,19 +54,18 @@ public class ComicListActivity extends AppCompatActivity {
         String tagId = getIntent().getStringExtra(EXTRA_TAG_ID);
         String tagName = getIntent().getStringExtra(EXTRA_TAG_NAME); // Optional
 
-        if (tagId == null || tagId.isEmpty()) {
-            Toast.makeText(this, "Thiếu tagId", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
 
         if (tagName != null) {
             binding.setTitle(tagName);
         } else {
             binding.setTitle("Danh sách truyện");
         }
-
-        viewModel.loadComicsByTags(Collections.singletonList(tagId));
-    }
+        Log.d("mytagt","id: " + tagId);
+        Log.d("mytagt","name: "+tagName);
+        if (tagId != null && !tagId.trim().isEmpty()) {
+            viewModel.loadComicsByTags(Collections.singletonList(tagId));
+        } else {
+            viewModel.loadComicsByTags(Collections.emptyList());
+        }    }
 
 }

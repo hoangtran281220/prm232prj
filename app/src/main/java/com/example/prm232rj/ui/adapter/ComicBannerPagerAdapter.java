@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.prm232rj.data.dto.ComicDtoBanner;
+import com.example.prm232rj.databinding.ItemBannerContentBinding;
 import com.example.prm232rj.databinding.ItemComicsBannerBinding;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class ComicBannerPagerAdapter extends RecyclerView.Adapter<ComicBannerPag
     @Override
     public BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        ItemComicsBannerBinding binding = ItemComicsBannerBinding.inflate(inflater, parent, false);
+        ItemBannerContentBinding binding = ItemBannerContentBinding.inflate(inflater, parent, false);
         return new BannerViewHolder(binding);
     }
 
@@ -45,9 +46,9 @@ public class ComicBannerPagerAdapter extends RecyclerView.Adapter<ComicBannerPag
     }
 
     static class BannerViewHolder extends RecyclerView.ViewHolder {
-        ItemComicsBannerBinding binding;
+        ItemBannerContentBinding binding;
 
-        public BannerViewHolder(ItemComicsBannerBinding  binding) {
+        public BannerViewHolder(ItemBannerContentBinding  binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

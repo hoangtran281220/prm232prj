@@ -95,12 +95,6 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
-//        binding.btnSeeAllHot.setOnClickListener(v -> {
-//            Intent intent = new Intent(requireContext(), ComicListActivity.class);
-//            intent.putExtra("TAG_ID", "4"); // ví dụ: 8 = "Kinh Dị"
-//            intent.putExtra("TAG_NAME", "Hành Động");
-//            startActivity(intent);
-//        });
         setupRecycler();
     }
 
@@ -118,7 +112,6 @@ public class HomeFragment extends Fragment {
         }});
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST));
 
-        // ➕ tiếp tục cho manhwa, manhua, romcom...
 
         adapter = new HomeSectionAdapter(sectionList);
         binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -130,6 +123,10 @@ public class HomeFragment extends Fragment {
 
         viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
             adapter.updateComicSection("hot", new ArrayList<>(previews));
+            adapter.updateComicSection("action", new ArrayList<>(previews));
+            adapter.updateComicSection("manhwa", new ArrayList<>(previews));
+            adapter.updateComicSection("romcom", new ArrayList<>(previews));
+
         });
 
         viewModel.loadBanners();

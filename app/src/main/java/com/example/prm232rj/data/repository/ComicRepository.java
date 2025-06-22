@@ -1,5 +1,7 @@
 package com.example.prm232rj.data.repository;
 
+import android.util.Log;
+
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
@@ -27,6 +29,8 @@ public class ComicRepository {
     }
 
     public void getComicsByTagIds(List<String> tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        Log.d("mytagt","repo");
+
         remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
 }

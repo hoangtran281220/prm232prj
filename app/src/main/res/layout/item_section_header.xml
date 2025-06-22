@@ -26,5 +26,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
+        <TextView
+            android:id="@+id/btnSeeAllHot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xem tất cả"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_blue_dark"
+            android:padding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvSectionTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvSectionTitle" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
