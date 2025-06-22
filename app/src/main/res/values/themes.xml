@@ -4,6 +4,20 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
+    <!-- Login screen theme -->
+    <style name="Theme.appLogin" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/login_primary</item>
+        <item name="colorPrimaryVariant">@color/login_primary</item>
+        <item name="colorOnPrimary">@color/black</item>
 
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/login_secondary</item>
+        <item name="colorSecondaryVariant">@color/login_secondary</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/login_primary</item>
+    </style>
     <style name="Theme.Prm232rj" parent="Base.Theme.Prm232rj" />
 </resources>
