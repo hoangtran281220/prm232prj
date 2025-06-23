@@ -24,6 +24,7 @@ import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -105,13 +106,16 @@ public class HomeFragment extends Fragment {
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
             sectionTitle = "Truyện Hot"; sectionTag = "hot";
         }});
-        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST));
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "hot";
+        }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
             sectionTitle = "Hành động"; sectionTag = "action";
         }});
-        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST));
-
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "action";
+        }});
 
         adapter = new HomeSectionAdapter(sectionList);
         binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -122,12 +126,16 @@ public class HomeFragment extends Fragment {
         );
 
         viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
-            adapter.updateComicSection("hot", new ArrayList<>(previews));
+//            adapter.updateComicSection("hot", new ArrayList<>(previews));
             adapter.updateComicSection("action", new ArrayList<>(previews));
             adapter.updateComicSection("manhwa", new ArrayList<>(previews));
             adapter.updateComicSection("romcom", new ArrayList<>(previews));
-
         });
+
+        viewModel.getComicsTop3().observe(getViewLifecycleOwner(), previews ->{
+            adapter.updateComicSection("hot", new ArrayList<>(previews));
+        });
+        viewModel.loadComicsTop3();
 
         viewModel.loadBanners();
         viewModel.loadPreviews();

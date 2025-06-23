@@ -33,4 +33,8 @@ public class ComicRepository {
 
         remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
+
+    public void getComicsHotTop3(ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback){
+        remoteDataSource.getComicsHotTop3(callback);
+    }
 }

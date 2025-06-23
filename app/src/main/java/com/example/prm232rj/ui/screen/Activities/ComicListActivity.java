@@ -66,6 +66,7 @@ public class ComicListActivity extends AppCompatActivity {
             viewModel.loadComicsByTags(Collections.singletonList(tagId));
         } else {
             viewModel.loadComicsByTags(Collections.emptyList());
-        }    }
+        }
+    }
 
 }

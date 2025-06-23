@@ -81,11 +81,30 @@ public class ComicRemoteDataSource {
 
     }
 
+    public void getComicsHotTop3(FirebaseCallback<ComicDtoWithTags> callback){
+        db.collection("comics")
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .limit(3) // Có thể giới hạn số lượng
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        result.add(comic);
+                    }
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
+                    callback.onFailure(e);
+                });
+    }
+
     public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
-        Log.d("mytagt","fs");
 
         if (tagIds == null || tagIds.isEmpty()) {
-            Log.d("mytagt","do");
 
             // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
             db.collection("comics")

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.ItemComicListHorizontalBinding;
+import com.example.prm232rj.databinding.ItemComicListVerticalBinding;
 import com.example.prm232rj.databinding.ItemComicsBannerBinding;
 import com.example.prm232rj.databinding.ItemSectionHeaderBinding;
 import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
@@ -29,9 +30,12 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemViewType(int position) {
-        return sections.get(position).viewType;
+        HomeSectionItem item = sections.get(position);
+        if (item.viewType == SectionViewType.BANNER) return SectionViewType.BANNER;
+        if (item.viewType == SectionViewType.SECTION_HEADER) return SectionViewType.SECTION_HEADER;
+        if ("hot".equals(item.sectionTag)) return 100; // custom type for vertical
+        return 101; // default horizontal comic list
     }
-
     @Override
     public int getItemCount() {
         return sections.size();
@@ -48,9 +52,12 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         } else if (viewType == SectionViewType.SECTION_HEADER) {
             ItemSectionHeaderBinding binding = ItemSectionHeaderBinding.inflate(inflater, parent, false);
             return new SectionHeaderViewHolder(binding);
-        } else { // COMIC_LIST
+        } else if (viewType == 100) { // vertical comic list
+            ItemComicListVerticalBinding binding = ItemComicListVerticalBinding.inflate(inflater, parent, false);
+            return new ComicListVerticalViewHolder(binding);
+        } else { // default horizontal
             ItemComicListHorizontalBinding binding = ItemComicListHorizontalBinding.inflate(inflater, parent, false);
-            return new ComicListViewHolder(binding);
+            return new ComicListHorizontalViewHolder(binding);
         }
     }
 
@@ -61,10 +68,11 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             ((BannerViewHolder) holder).bind(item.banners);
         } else if (holder instanceof SectionHeaderViewHolder) {
             ((SectionHeaderViewHolder) holder).bind(item.sectionTitle);
-        } else if (holder instanceof ComicListViewHolder) {
-            ((ComicListViewHolder) holder).bind(item.comics);
+        } else if (holder instanceof ComicListVerticalViewHolder) {
+            ((ComicListVerticalViewHolder) holder).bind(item.comics);
+        } else if (holder instanceof ComicListHorizontalViewHolder) {
+            ((ComicListHorizontalViewHolder) holder).bind(item.comics);
         }
-
     }
 
     public void updateBannerSection(List<ComicDtoBanner> banners) {
@@ -139,14 +147,30 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    static class ComicListViewHolder extends RecyclerView.ViewHolder {
+    static class ComicListHorizontalViewHolder extends RecyclerView.ViewHolder {
         private final ComicPreviewAdapter adapter = new ComicPreviewAdapter(new java.util.ArrayList<>());
+        private final ItemComicListHorizontalBinding binding;
 
-        public ComicListViewHolder(ItemComicListHorizontalBinding binding) {
+        public ComicListHorizontalViewHolder(ItemComicListHorizontalBinding binding) {
             super(binding.getRoot());
-            binding.recyclerView.setLayoutManager(
-                    new LinearLayoutManager(binding.getRoot().getContext(),
-                            LinearLayoutManager.HORIZONTAL, false));
+            this.binding = binding;
+            binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.HORIZONTAL, false));
+            binding.recyclerView.setAdapter(adapter);
+        }
+
+        void bind(List<IComicPreview> comics) {
+            adapter.setData(comics);
+        }
+    }
+
+    static class ComicListVerticalViewHolder extends RecyclerView.ViewHolder {
+        private final TopComicAdapter adapter = new TopComicAdapter(new java.util.ArrayList<>());
+        private final ItemComicListVerticalBinding binding;
+
+        public ComicListVerticalViewHolder(ItemComicListVerticalBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+            binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.VERTICAL, false));
             binding.recyclerView.setAdapter(adapter);
         }
 
