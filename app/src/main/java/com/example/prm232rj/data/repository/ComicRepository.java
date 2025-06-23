@@ -4,7 +4,10 @@ import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
 import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
+import com.example.prm232rj.data.model.Author;
+import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.Tag;
 
 import java.util.List;
 
@@ -35,5 +38,16 @@ public class ComicRepository {
         remoteDataSource.getComicById(comicId, callback);
     }
 
+    public void getChaptersByComicId(String comicId, ComicRemoteDataSource.FirebaseCallback<Chapter> callback) {
+        remoteDataSource.getChaptersByComicId(comicId, callback);
+    }
+
+    public void getAuthorsByIds(List<String> ids, ComicRemoteDataSource.FirebaseCallback<Author> callback) {
+        remoteDataSource.getAuthorsByIds(ids, callback);
+    }
+
+    public void getTagsByIds(List<String> ids, ComicRemoteDataSource.FirebaseCallback<Tag> callback) {
+        remoteDataSource.getTagsByIds(ids, callback);
+    }
 
 }

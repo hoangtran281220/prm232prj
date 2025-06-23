@@ -165,6 +165,58 @@
                     android:textColor="@android:color/black"
                     tools:text="Mô tả nội dung truyện..." />
 
+                <!-- Tác giả -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="start|center_vertical">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_author"
+                        android:tint="@color/text_secondary"
+                        tools:ignore="MissingConstraints" />
+
+                    <TextView
+                        android:id="@+id/textAuthors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tác giả: Đang tải..."
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="Tác giả: Trần Văn A, Lê Văn B" />
+                </LinearLayout>
+
+                <!-- Thể loại -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:orientation="horizontal"
+                    android:gravity="start|center_vertical">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_tag"
+                        android:tint="@color/text_secondary"
+                        tools:ignore="MissingConstraints" />
+
+                    <TextView
+                        android:id="@+id/textTags"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thể loại: Đang tải..."
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="Thể loại: Hành động, Hài hước" />
+                </LinearLayout>
+
                 <!-- Action Buttons -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -194,6 +246,68 @@
 
                 </LinearLayout>
 
+
+
+                <!-- Danh sách chương với thiết kế đẹp hơn -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/chapter_section_background"
+                    android:padding="16dp"
+                    android:layout_margin="8dp"
+                    android:elevation="2dp">
+
+                    <!-- Header với icon và gradient background -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/header_gradient_background"
+                        android:padding="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:elevation="1dp">
+
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Danh sách chương"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                             />
+
+                        <TextView
+                            android:id="@+id/tvChapterCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="12 chương"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:background="@drawable/count_badge_background"
+                            android:padding="4dp"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp" />
+
+                    </LinearLayout>
+
+                    <!-- RecyclerView với thiết kế card đẹp -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerChapters"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:clipToPadding="false"
+                        android:paddingBottom="8dp"
+                        android:scrollbars="vertical"
+                        android:fadeScrollbars="true"
+                        tools:listitem="@layout/item_chapter" />
+
+                </LinearLayout>
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>

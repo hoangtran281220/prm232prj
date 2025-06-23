@@ -1,13 +1,21 @@
 package com.example.prm232rj.data.firebase;
 
+import android.util.Log;
+
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
+import com.example.prm232rj.data.model.Author;
+import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.Tag;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,6 +152,80 @@ public class ComicRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    //Lấy chapter của comic
+    public void getChaptersByComicId(String comicId, FirebaseCallback<Chapter> callback) {
+        db.collection("chapters")
+                .whereEqualTo("ComicId", comicId)
+                .orderBy("ChapterNumber")
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Chapter> chapters = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : query) {
+                        Chapter chapter = doc.toObject(Chapter.class);
+                        chapter.setId(doc.getId());
+                        chapters.add(chapter);
+                    }
+                    callback.onComplete(chapters);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+    //Lấy tác giả theo id truyện
+    public void getAuthorsByIds(List<String> ids, FirebaseCallback<Author> callback) {
+        Log.d("ComicRepository", "getAuthorsByIds called with IDs: " + (ids != null ? ids : "null"));
+        if (ids == null || ids.isEmpty()) {
+            Log.w("ComicRepository", "Author IDs list is null or empty");
+            callback.onComplete(new ArrayList<>());
+            return;
+        }
+
+        Log.d("ComicRepository", "Executing query for authors with IDs: " + ids);
+        db.collection("Authors")
+                .whereIn(FieldPath.documentId(), ids)
+                .get()
+                .addOnSuccessListener(query -> {
+                    Log.d("ComicRepository", "Authors query successful, documents found: " + query.size());
+                    List<Author> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        Log.d("ComicRepository", "Processing document ID: " + doc.getId());
+                        Author a = doc.toObject(Author.class);
+                        if (a != null) {
+                            a.setId(doc.getId());
+                            Log.d("ComicRepository", "Author converted: " + (a.getName() != null ? a.getName() : "null") + ", ID: " + doc.getId());
+                        } else {
+                            Log.w("ComicRepository", "Failed to convert document to Author: " + doc.getId());
+                        }
+                        result.add(a);
+                    }
+                    Log.d("ComicRepository", "Total authors loaded: " + result.size());
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ComicRepository", "Failed to fetch authors: " + e.getMessage(), e);
+                    if (e instanceof FirebaseFirestoreException) {
+                        FirebaseFirestoreException fse = (FirebaseFirestoreException) e;
+                        Log.e("ComicRepository", "Firestore error code: " + fse.getCode());
+                    }
+                    callback.onFailure(e);
+                });
+    }
+    //Lấy thể loại theo id truyện
+    public void getTagsByIds(List<String> ids, FirebaseCallback<Tag> callback) {
+        db.collection("Tags")
+                .whereIn(FieldPath.documentId(), ids)
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Tag> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        Tag t = doc.toObject(Tag.class);
+                        if (t != null) t.setId(doc.getId());
+                        result.add(t);
+                    }
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
 
 

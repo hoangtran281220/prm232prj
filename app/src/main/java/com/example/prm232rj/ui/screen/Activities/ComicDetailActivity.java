@@ -6,9 +6,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.prm232rj.databinding.ActivityComicDetailBinding;
+import com.example.prm232rj.ui.adapter.ChapterAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicDetailViewModel;
+
+import java.util.ArrayList;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -17,6 +21,7 @@ public class ComicDetailActivity extends AppCompatActivity {
     private ActivityComicDetailBinding binding;
     private ComicDetailViewModel viewModel;
     private String comicId;
+    private ChapterAdapter chapterAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +46,14 @@ public class ComicDetailActivity extends AppCompatActivity {
 
         // Setup UI events
         setupUI();
-
+        chapterAdapter = new ChapterAdapter(new ArrayList<>(), chapter -> {
+            // xử lý khi người dùng bấm vào chapter (nếu cần)
+        });
+        binding.recyclerChapters.setAdapter(chapterAdapter); // ← Gán adapter ở đây
+        binding.recyclerChapters.setLayoutManager(new LinearLayoutManager(this));
         // Load dữ liệu
         viewModel.loadComic(comicId);
+        viewModel.loadChapters(comicId);
     }
 
     private void setupObservers() {
@@ -52,6 +62,9 @@ public class ComicDetailActivity extends AppCompatActivity {
             if (comic != null) {
                 binding.setComic(comic);
                 binding.executePendingBindings(); // Đảm bảo binding được thực thi ngay lập tức
+
+                // Gọi fetch tác giả & thể loại ở đây
+                viewModel.fetchAuthorAndTags(comic);
             }
         });
 
@@ -74,6 +87,24 @@ public class ComicDetailActivity extends AppCompatActivity {
                 // hoặc finish activity nếu lỗi nghiêm trọng
             }
         });
+
+        viewModel.getChapters().observe(this, chapters -> {
+            if (chapters != null) {
+                chapterAdapter.updateChapters(chapters); // Cập nhật dữ liệu cho adapter hiện tại
+                binding.tvChapterCount.setText(chapters.size() + " chương"); // Cập nhật số chương
+
+            }
+        });
+        //load tác giả
+        viewModel.getAuthorNames().observe(this, authors -> {
+            binding.textAuthors.setText(authors);
+        });
+        //load tag
+        viewModel.getTagNames().observe(this, tags -> {
+            binding.textTags.setText(tags);
+        });
+
+
     }
 
     private void setupUI() {

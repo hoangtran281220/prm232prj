@@ -12,35 +12,37 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterViewHolder> {
-    private List<Chapter> chapters = new ArrayList<>();
-    private OnChapterClickListener listener;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private  List<Chapter> chapters;
+    private final OnChapterClickListener listener;
+
 
     public interface OnChapterClickListener {
-        void onChapterClick(Chapter chapter);
+        void onClick(Chapter chapter);
     }
 
-    public ChapterAdapter(OnChapterClickListener listener) {
+    public ChapterAdapter(List<Chapter> chapters, OnChapterClickListener listener) {
+        this.chapters = chapters;
         this.listener = listener;
     }
 
-    public void setChapters(List<Chapter> chapters) {
-        this.chapters = chapters;
-        notifyDataSetChanged();
+    // Phương thức cập nhật dữ liệu
+    public void updateChapters(List<Chapter> newChapters) {
+        this.chapters = new ArrayList<>(newChapters);
+        notifyDataSetChanged(); // Thông báo adapter rằng dữ liệu đã thay đổi
     }
-
     @NonNull
     @Override
     public ChapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemChapterBinding binding = ItemChapterBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false
-        );
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        ItemChapterBinding binding = ItemChapterBinding.inflate(inflater, parent, false);
         return new ChapterViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ChapterViewHolder holder, int position) {
-        holder.bind(chapters.get(position));
+        Chapter chapter = chapters.get(position);
+        holder.binding.setChapter(chapter);
+        holder.binding.getRoot().setOnClickListener(v -> listener.onClick(chapter));
     }
 
     @Override
@@ -48,31 +50,12 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         return chapters.size();
     }
 
-    class ChapterViewHolder extends RecyclerView.ViewHolder {
-        private ItemChapterBinding binding;
+    static class ChapterViewHolder extends RecyclerView.ViewHolder {
+        ItemChapterBinding binding;
 
-        public ChapterViewHolder(ItemChapterBinding binding) {
+        ChapterViewHolder(ItemChapterBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-
-            binding.getRoot().setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onChapterClick(chapters.get(position));
-                }
-            });
-        }
-
-        public void bind(Chapter chapter) {
-            binding.textChapterTitle.setText("Chương " + chapter.getChapterNumber());
-
-            if (chapter.getCreatedAt() != null) {
-                binding.textChapterDate.setText(dateFormat.format(chapter.getCreatedAt().toDate()));
-            }
-
-            binding.textChapterViews.setText(String.valueOf(chapter.getViews()) + " lượt xem");
-
-            binding.executePendingBindings();
         }
     }
 }
