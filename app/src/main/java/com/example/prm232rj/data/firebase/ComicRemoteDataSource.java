@@ -88,18 +88,58 @@ public class ComicRemoteDataSource {
 
     }
 
+    public void getComicsHotTop3(FirebaseCallback<ComicDtoWithTags> callback){
+        db.collection("comics")
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .limit(3) // Có thể giới hạn số lượng
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        result.add(comic);
+                    }
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
+                    callback.onFailure(e);
+                });
+    }
+
     public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
+
         if (tagIds == null || tagIds.isEmpty()) {
-            callback.onComplete(Collections.emptyList());
+
+            // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
+            db.collection("comics")
+                    .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                    .orderBy("Views", Query.Direction.DESCENDING)
+                    .orderBy("Rating", Query.Direction.DESCENDING)
+                    .limit(20) // Có thể giới hạn số lượng
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        List<ComicDtoWithTags> result = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                            result.add(comic);
+                        }
+                        callback.onComplete(result);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
+                        callback.onFailure(e);
+                    });
             return;
         }
 
-        // Giới hạn: Firestore chỉ cho phép max 10 phần tử với whereArrayContainsAny
+        // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
         if (tagIds.size() > 10) {
             callback.onFailure(new IllegalArgumentException("Không được truyền quá 10 tagId"));
             return;
         }
-
         db.collection("comics")
                 .whereArrayContainsAny("TagId", tagIds)
                 .get()
@@ -109,6 +149,19 @@ public class ComicRemoteDataSource {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
                         result.add(comic);
                     }
+
+                    result.sort((a, b) -> {
+                        int r = Double.compare(b.getRating(), a.getRating());
+                        if (r != 0) return r;
+
+                        r = Long.compare(b.getViews(), a.getViews());
+                        if (r != 0) return r;
+
+                        if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
+                            return b.getUpdatedAt().compareTo(a.getUpdatedAt());
+
+                        return 0;
+                    });
                     callback.onComplete(result);
                 })
                 .addOnFailureListener(callback::onFailure);
@@ -225,6 +278,7 @@ public class ComicRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
 
 

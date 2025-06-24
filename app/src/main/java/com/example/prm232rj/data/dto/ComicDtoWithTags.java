@@ -1,6 +1,7 @@
 package com.example.prm232rj.data.dto;
 
 import com.example.prm232rj.data.interfaces.IComicPreview;
+import com.google.firebase.Timestamp;
 
 import java.util.List;
 
@@ -13,17 +14,40 @@ public class ComicDtoWithTags implements IComicPreview {
     private String Id;
     private List<String> tagIds;
 
+    private long Views;
+
+    private Timestamp UpdatedAt;
+
+    public Timestamp getUpdatedAt() {
+        return UpdatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        UpdatedAt = updatedAt;
+    }
+
+    public long getViews() {
+        return Views;
+    }
+
+    public void setViews(long views) {
+        Views = views;
+    }
+
     public ComicDtoWithTags() {
         // Firestore requires a public no-args constructor
     }
 
-    public ComicDtoWithTags(String title, String coverImage, String status, double rating, List<String> tagIds, String id) {
+    public ComicDtoWithTags(String title, String coverImage, String status, double rating,
+                            List<String> tagIds, String id, long views, Timestamp updatedAt) {
         this.Title = title;
         this.CoverImage = coverImage;
         this.Status = status;
         this.Rating = rating;
         this.tagIds = tagIds;
         this.Id = id;
+        this.Views = views;
+        this.UpdatedAt = updatedAt;
     }
 
     @Override
