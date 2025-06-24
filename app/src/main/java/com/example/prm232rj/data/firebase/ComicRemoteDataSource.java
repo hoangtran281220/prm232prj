@@ -157,7 +157,7 @@ public class ComicRemoteDataSource {
     public void getChaptersByComicId(String comicId, FirebaseCallback<Chapter> callback) {
         db.collection("chapters")
                 .whereEqualTo("ComicId", comicId)
-                .orderBy("ChapterNumber")
+                .orderBy("ChapterNumber", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(query -> {
                     List<Chapter> chapters = new ArrayList<>();

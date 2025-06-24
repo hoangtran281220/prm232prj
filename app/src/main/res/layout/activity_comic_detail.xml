@@ -295,17 +295,22 @@
 
                     </LinearLayout>
 
-                    <!-- RecyclerView với thiết kế card đẹp -->
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerChapters"
+                    <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:clipToPadding="false"
-                        android:paddingBottom="8dp"
-                        android:scrollbars="vertical"
-                        android:fadeScrollbars="true"
-                        tools:listitem="@layout/item_chapter" />
+                        android:layout_marginTop="8dp">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recyclerChapters"
+                            android:layout_width="match_parent"
+                            android:layout_height="130dp"
+                            android:nestedScrollingEnabled="true"
+                            android:scrollbars="vertical"
+                            android:clipToPadding="false"
+                            android:paddingBottom="8dp"
+                            tools:listitem="@layout/item_chapter" />
+
+                    </FrameLayout>
 
                 </LinearLayout>
             </LinearLayout>

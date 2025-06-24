@@ -8,14 +8,16 @@ public class Chapter {
     private List<String> Content; // Array of image URLs
     private Timestamp CreatedAt;
     private long Views;
+    private  String ChapterTitle;
 
-    public Chapter(long views, Timestamp createdAt, List<String> content, String comicId, int chapterNumber, String id) {
+    public Chapter(long views, Timestamp createdAt, List<String> content, String comicId, int chapterNumber, String id, String chapterTitle) {
         Views = views;
         CreatedAt = createdAt;
         Content = content;
         ComicId = comicId;
         ChapterNumber = chapterNumber;
         this.id = id;
+        ChapterTitle = chapterTitle;
     }
 
     public Chapter() {
@@ -68,5 +70,13 @@ public class Chapter {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getChapterTitle() {
+        return ChapterTitle;
+    }
+
+    public void setChapterTitle(String chapterTitle) {
+        ChapterTitle = chapterTitle;
     }
 }
