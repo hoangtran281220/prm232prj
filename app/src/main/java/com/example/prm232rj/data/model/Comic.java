@@ -1,6 +1,7 @@
 package com.example.prm232rj.data.model;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.PropertyName;
 
 import java.util.List;
 
@@ -51,11 +52,11 @@ public class Comic {
     public void setCreatedAt(Timestamp createdAt) {
         CreatedAt = createdAt;
     }
-
+    @PropertyName("AuthorId")
     public List<String> getAuthorId() {
         return AuthorId;
     }
-
+    @PropertyName("AuthorId")
     public void setAuthorId(List<String> authorId) {
         AuthorId = authorId;
     }
