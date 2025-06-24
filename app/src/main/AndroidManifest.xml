@@ -30,10 +30,8 @@
             android:name=".MainActivity"
 
             android:exported="true"></activity>
-        <activity android:name=".ui.screen.Activities.ComicDetailActivity" />
-
+        <activity android:name=".ui.screen.Activities.ComicDetailActivity"
             android:exported="false">
-
         </activity>
 
     </application>
