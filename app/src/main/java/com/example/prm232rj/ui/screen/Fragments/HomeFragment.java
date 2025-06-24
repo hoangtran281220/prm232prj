@@ -1,6 +1,5 @@
 package com.example.prm232rj.ui.screen.Fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,18 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentHomeBinding;
-import com.example.prm232rj.ui.adapter.ComicBannerPagerAdapter;
-import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
-import com.example.prm232rj.ui.adapter.HomeSectionAdapter;
+import com.example.prm232rj.ui.adapter.section.HomeSectionAdapter;
 import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
 import com.example.prm232rj.ui.adapter.section.SectionViewType;
-import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;

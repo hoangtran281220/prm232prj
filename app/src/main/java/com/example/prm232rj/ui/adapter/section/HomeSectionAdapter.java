@@ -1,9 +1,8 @@
-package com.example.prm232rj.ui.adapter;
+package com.example.prm232rj.ui.adapter.section;
 
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,8 +14,9 @@ import com.example.prm232rj.databinding.ItemComicListHorizontalBinding;
 import com.example.prm232rj.databinding.ItemComicListVerticalBinding;
 import com.example.prm232rj.databinding.ItemComicsBannerBinding;
 import com.example.prm232rj.databinding.ItemSectionHeaderBinding;
-import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
-import com.example.prm232rj.ui.adapter.section.SectionViewType;
+import com.example.prm232rj.ui.adapter.ComicBannerPagerAdapter;
+import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
+import com.example.prm232rj.ui.adapter.TopComicAdapter;
 import com.example.prm232rj.ui.screen.Activities.ComicListActivity;
 
 import java.util.List;
@@ -106,6 +106,10 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             this.binding = binding;
             binding.bannerViewPager.setAdapter(adapter);
             binding.bannerDots.setViewPager2(binding.bannerViewPager);
+            binding.bannerViewPager.getChildAt(0).setOnTouchListener((v, event) -> {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            });
         }
 
         void bind(List<ComicDtoBanner> banners) {

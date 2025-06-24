@@ -1,4 +1,4 @@
-package com.example.prm232rj.ui.adapter;
+package com.example.prm232rj.utils;
 
 import android.widget.ImageView;
 
