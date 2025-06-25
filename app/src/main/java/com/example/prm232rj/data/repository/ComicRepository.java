@@ -2,6 +2,7 @@ package com.example.prm232rj.data.repository;
 
 import android.util.Log;
 
+import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
@@ -55,10 +56,16 @@ public class ComicRepository {
         remoteDataSource.getTagsByIds(ids, callback);
     }
 
-
-
     public void getComicsHotTop3(ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback){
         remoteDataSource.getComicsHotTop3(callback);
+    }
+
+    public void getChapterByIdForReading(String comicId, String chapterId, ComicRemoteDataSource.FirebaseCallback<ChapterReadingDto> callback) {
+        remoteDataSource.getChapterByIdForReading(comicId, chapterId, callback);
+    }
+
+    public void getAllChapters(String comicId, ComicRemoteDataSource.FirebaseCallback<ChapterReadingDto> callback) {
+        remoteDataSource.getAllChapters(comicId, callback);
     }
 
 }

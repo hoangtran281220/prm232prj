@@ -33,6 +33,7 @@
         <activity android:name=".ui.screen.Activities.ComicDetailActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".ui.screen.Activities.ChapterActivity" />
 
     </application>
 

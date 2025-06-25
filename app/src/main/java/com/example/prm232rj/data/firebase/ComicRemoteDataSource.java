@@ -2,6 +2,7 @@ package com.example.prm232rj.data.firebase;
 
 import android.util.Log;
 
+import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
@@ -27,7 +28,7 @@ import javax.inject.Singleton;
 @Singleton
 public class ComicRemoteDataSource {
     private final FirebaseFirestore db;
-
+    private static final String TAG = "ComicRemoteDataSource";
     @Inject
     public ComicRemoteDataSource() {
         this.db = FirebaseFirestore.getInstance();
@@ -279,6 +280,64 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getChapterByIdForReading(String comicId, String chapterId, FirebaseCallback<ChapterReadingDto> callback) {
+        db.collection("chapters").document(chapterId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    List<ChapterReadingDto> result = new ArrayList<>();
+                    if (document.exists()) {
+                        String id = document.getId();
+                        Long chapterNumber = document.getLong("ChapterNumber");
+                        String chapterTitle = document.getString("ChapterTitle");
+                        String comic = document.getString("ComicId");
+                        List<String> contentImages = (List<String>) document.get("Content");
+                        Long viewsObj = document.getLong("Views");
+                        long views = viewsObj != null ? viewsObj : 0;
+
+                        if (chapterNumber != null && chapterTitle != null && comic != null && contentImages != null) {
+                            result.add(new ChapterReadingDto(id, chapterNumber.intValue(), chapterTitle, comic, contentImages, views));
+                        }
+                    } else {
+                        Log.w(TAG, "Chapter not found: " + chapterId);
+                    }
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching chapter " + chapterId + ": " + e.getMessage());
+                    callback.onFailure(e);
+                });
+    }
+
+
+    public void getAllChapters(String comicId, FirebaseCallback<ChapterReadingDto> callback) {
+        db.collection("chapters")
+                .whereEqualTo("ComicId", comicId)
+                .orderBy("ChapterNumber", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ChapterReadingDto> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        String id = doc.getId();
+                        Long chapterNumber = doc.getLong("ChapterNumber");
+                        String chapterTitle = doc.getString("ChapterTitle");
+                        String comic = doc.getString("ComicId");
+                        List<String> contentImages = (List<String>) doc.get("Content");
+
+                        Long viewsObj = doc.getLong("Views");
+                        long views = viewsObj != null ? viewsObj : 0;
+
+                        if (chapterNumber != null && chapterTitle != null && comic != null && contentImages != null) {
+                            result.add(new ChapterReadingDto(id, chapterNumber.intValue(), chapterTitle, comic, contentImages, views));
+                        }
+                    }
+                    Log.d(TAG, "Fetched " + result.size() + " chapters for comic " + comicId);
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching chapters for " + comicId + ": " + e.getMessage());
+                    callback.onFailure(e);
+                });
+    }
 
 
 

@@ -54,4 +54,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.tbuonomo:dotsindicator:4.3'
     implementation("com.cloudinary:cloudinary-android:3.0.2")
+    implementation ('com.squareup.picasso:picasso:2.71828')
 }

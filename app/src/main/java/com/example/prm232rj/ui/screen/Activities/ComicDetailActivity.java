@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.screen.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -47,7 +48,11 @@ public class ComicDetailActivity extends AppCompatActivity {
         // Setup UI events
         setupUI();
         chapterAdapter = new ChapterAdapter(new ArrayList<>(), chapter -> {
-            // xử lý khi người dùng bấm vào chapter (nếu cần)
+            // Xử lý khi nhấn vào chapter
+            Intent intent = new Intent(ComicDetailActivity.this, ChapterActivity.class);
+            intent.putExtra("COMIC_ID", comicId);
+            intent.putExtra("CHAPTER_ID", chapter.getId());
+            startActivity(intent);
         });
         binding.recyclerChapters.setAdapter(chapterAdapter); // ← Gán adapter ở đây
         binding.recyclerChapters.setLayoutManager(new LinearLayoutManager(this));
