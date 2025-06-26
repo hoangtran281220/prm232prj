@@ -16,6 +16,9 @@ import com.example.prm232rj.databinding.ActivityHomeBinding;
 import com.example.prm232rj.ui.adapter.MainPagerAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity {
 
     private ActivityHomeBinding binding;
