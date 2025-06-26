@@ -45,7 +45,7 @@ public class ComicListActivity extends AppCompatActivity {
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
 
-        viewModel.getComics().observe(this, comics -> {
+        viewModel.getComicsByTag("4").observe(this, comics -> {
             adapter.setData(comics);
         });
     }

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapter.PreviewViewHolder> {
 
-    private List<IComicPreview> previewList = new ArrayList<>();
+    private List<IComicPreview> previewList;
 
     public ComicPreviewAdapter(List<IComicPreview> previewList) {
         this.previewList = previewList;

@@ -1,6 +1,9 @@
 package com.example.prm232rj.data.repository;
 
+import android.app.Activity;
 import android.util.Log;
+
+import androidx.lifecycle.LifecycleOwner;
 
 import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
@@ -11,6 +14,7 @@ import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
 import com.example.prm232rj.data.model.Tag;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.List;
 
@@ -24,8 +28,8 @@ public class ComicRepository {
     public ComicRepository(ComicRemoteDataSource remoteDataSource) {
         this.remoteDataSource = remoteDataSource;
     }
-    public void getComicBanners(ComicRemoteDataSource.FirebaseCallback<ComicDtoBanner> callback) {
-        remoteDataSource.getComicBanners(callback);
+    public ListenerRegistration getComicBanners(Activity activity, ComicRemoteDataSource.FirebaseCallback<ComicDtoBanner> callback) {
+        return remoteDataSource.getComicBanners(activity, callback);
     }
 
     // Lấy danh sách preview truyện
@@ -37,6 +41,10 @@ public class ComicRepository {
         Log.d("mytagt","repo");
 
         remoteDataSource.getComicsByTagIds(tagIds, callback);
+    }
+
+    public void getComicsByTagIdsPaging(String tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        remoteDataSource.getComicsByTagIdsPaging(tagIds, callback);
     }
 
     // Thêm method để lấy comic theo ID

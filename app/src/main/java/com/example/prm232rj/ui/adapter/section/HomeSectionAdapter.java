@@ -98,12 +98,10 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     static class BannerViewHolder extends RecyclerView.ViewHolder {
-        private final ItemComicsBannerBinding binding;
         private final ComicBannerPagerAdapter adapter = new ComicBannerPagerAdapter();
 
         public BannerViewHolder(ItemComicsBannerBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
             binding.bannerViewPager.setAdapter(adapter);
             binding.bannerDots.setViewPager2(binding.bannerViewPager);
             binding.bannerViewPager.getChildAt(0).setOnTouchListener((v, event) -> {
@@ -153,11 +151,9 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     static class ComicListHorizontalViewHolder extends RecyclerView.ViewHolder {
         private final ComicPreviewAdapter adapter = new ComicPreviewAdapter(new java.util.ArrayList<>());
-        private final ItemComicListHorizontalBinding binding;
 
         public ComicListHorizontalViewHolder(ItemComicListHorizontalBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
             binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.recyclerView.setAdapter(adapter);
         }
@@ -168,14 +164,16 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     static class ComicListVerticalViewHolder extends RecyclerView.ViewHolder {
-        private final TopComicAdapter adapter = new TopComicAdapter(new java.util.ArrayList<>());
-        private final ItemComicListVerticalBinding binding;
+        private final TopComicAdapter adapter = new TopComicAdapter(3);
 
         public ComicListVerticalViewHolder(ItemComicListVerticalBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
-            binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.VERTICAL, false));
-            binding.recyclerView.setAdapter(adapter);
+            binding.topPager.setAdapter(adapter);
+            binding.dotsIndicator.setViewPager2(binding.topPager);
+
+            // Tuỳ chọn nếu muốn snap từng page
+            binding.topPager.setOffscreenPageLimit(1);
+            binding.topPager.setSaveEnabled(false); // tránh lỗi state khi nested
         }
 
         void bind(List<IComicPreview> comics) {

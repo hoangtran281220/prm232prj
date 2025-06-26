@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.FragmentHomeBinding;
 import com.example.prm232rj.ui.adapter.section.HomeSectionAdapter;
 import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
@@ -19,6 +20,7 @@ import com.example.prm232rj.ui.adapter.section.SectionViewType;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -82,6 +84,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
+
+
         return binding.getRoot();
     }
 
@@ -91,6 +95,12 @@ public class HomeFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
         setupRecycler();
+
+        view.post(() -> {
+            viewModel.loadBanners(requireActivity());
+            viewModel.loadComicsTop3();
+            viewModel.loadComicsByTags(Collections.singletonList("4"));
+        });
     }
 
     private void setupRecycler() {
@@ -119,20 +129,23 @@ public class HomeFragment extends Fragment {
                 adapter.updateBannerSection(banners)
         );
 
-        viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
-//            adapter.updateComicSection("hot", new ArrayList<>(previews));
-            adapter.updateComicSection("action", new ArrayList<>(previews));
-            adapter.updateComicSection("manhwa", new ArrayList<>(previews));
-            adapter.updateComicSection("romcom", new ArrayList<>(previews));
+        viewModel.getComicsByTag("4").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("action", new ArrayList<>(comics));
         });
+//        viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
+//           adapter.updateComicSection("hot", new ArrayList<>(previews));
+//            adapter.updateComicSection("action", new ArrayList<>(previews));
+//            adapter.updateComicSection("manhwa", new ArrayList<>(previews));
+//            adapter.updateComicSection("romcom", new ArrayList<>(previews));
+//        });
 
         viewModel.getComicsTop3().observe(getViewLifecycleOwner(), previews ->{
             adapter.updateComicSection("hot", new ArrayList<>(previews));
         });
-        viewModel.loadComicsTop3();
+//        viewModel.loadComicsTop3();
 
-        viewModel.loadBanners();
-        viewModel.loadPreviews();
+        //viewModel.loadBanners(requireActivity());
+//        viewModel.loadPreviews();
     }
 
 }
