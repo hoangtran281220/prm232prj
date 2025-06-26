@@ -100,6 +100,7 @@ public class HomeFragment extends Fragment {
             viewModel.loadBanners(requireActivity());
             viewModel.loadComicsTop3();
             viewModel.loadComicsByTags(Collections.singletonList("4"));
+            viewModel.loadComicsByTags(Collections.singletonList("2"));
         });
     }
 
@@ -121,6 +122,14 @@ public class HomeFragment extends Fragment {
             sectionTag = "action";
         }});
 
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Manga Phiêu lưu";
+            sectionTag = "adventure";
+        }});
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "adventure";
+        }});
+
         adapter = new HomeSectionAdapter(sectionList);
         binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.homeRecyclerView.setAdapter(adapter);
@@ -132,20 +141,14 @@ public class HomeFragment extends Fragment {
         viewModel.getComicsByTag("4").observe(getViewLifecycleOwner(), comics -> {
             adapter.updateComicSection("action", new ArrayList<>(comics));
         });
-//        viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
-//           adapter.updateComicSection("hot", new ArrayList<>(previews));
-//            adapter.updateComicSection("action", new ArrayList<>(previews));
-//            adapter.updateComicSection("manhwa", new ArrayList<>(previews));
-//            adapter.updateComicSection("romcom", new ArrayList<>(previews));
-//        });
+
+        viewModel.getComicsByTag("2").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("adventure", new ArrayList<>(comics));
+        });
 
         viewModel.getComicsTop3().observe(getViewLifecycleOwner(), previews ->{
             adapter.updateComicSection("hot", new ArrayList<>(previews));
         });
-//        viewModel.loadComicsTop3();
-
-        //viewModel.loadBanners(requireActivity());
-//        viewModel.loadPreviews();
     }
 
 }

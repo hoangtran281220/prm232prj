@@ -143,7 +143,15 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     binding.getRoot().getContext().startActivity(intent);
                 });
 
-            }else{
+            }else if (titleText.equals("Manga Phiêu lưu")) {
+                binding.btnSeeAllHot.setOnClickListener(v -> {
+                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                    intent.putExtra("TAG_ID", "2");
+                    intent.putExtra("TAG_NAME", "Manga Phiêu lưu");
+                    binding.getRoot().getContext().startActivity(intent);
+                });
+            }
+            else{
                 binding.btnSeeAllHot.setOnClickListener(null);
             }
         }

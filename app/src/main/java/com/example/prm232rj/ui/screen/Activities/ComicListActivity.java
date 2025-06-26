@@ -13,6 +13,7 @@ import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.Collections;
+import java.util.Objects;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -24,12 +25,21 @@ public class ComicListActivity extends AppCompatActivity {
     private ComicPreviewAdapter adapter;
     private ComicViewModel viewModel;
 
+    private String tagId;
+    private String tagName;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         binding = ActivityComicListBinding.inflate(getLayoutInflater());
+
         setContentView(binding.getRoot());
+
+        tagId = getIntent().getStringExtra(EXTRA_TAG_ID);
+        tagName = getIntent().getStringExtra(EXTRA_TAG_NAME);
+
         setupRecyclerView();
         setupViewModel();
         loadData();
@@ -44,22 +54,13 @@ public class ComicListActivity extends AppCompatActivity {
 
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
-
-        viewModel.getComicsByTag("4").observe(this, comics -> {
+        viewModel.getComicsByTag(tagId).observe(this, comics -> {
             adapter.setData(comics);
         });
     }
 
     private void loadData() {
-        String tagId = getIntent().getStringExtra(EXTRA_TAG_ID);
-        String tagName = getIntent().getStringExtra(EXTRA_TAG_NAME); // Optional
-
-
-        if (tagName != null) {
-            binding.setTitle(tagName);
-        } else {
-            binding.setTitle("Danh sách truyện");
-        }
+        binding.setTitle(Objects.requireNonNullElse(tagName, "Danh sách truyện"));
         Log.d("mytagt","id: " + tagId);
         Log.d("mytagt","name: "+tagName);
         if (tagId != null && !tagId.trim().isEmpty()) {

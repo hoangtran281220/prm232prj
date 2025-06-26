@@ -110,8 +110,13 @@ public class ComicRemoteDataSource {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        result.add(comic);
-                    }
+                        assert comic != null;
+                        if (comic.getId() == null) {
+                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                            result.add(comic);
+                        }else{
+                            result.add(comic);
+                        }                    }
                     callback.onComplete(result);
                 })
                 .addOnFailureListener(e -> {
@@ -135,7 +140,13 @@ public class ComicRemoteDataSource {
                         List<ComicDtoWithTags> result = new ArrayList<>();
                         for (DocumentSnapshot doc : snapshot.getDocuments()) {
                             ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                            result.add(comic);
+                            assert comic != null;
+                            if (comic.getId() == null) {
+                                comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                result.add(comic);
+                            }else{
+                                result.add(comic);
+                            }
                         }
                         callback.onComplete(result);
                     })
@@ -159,7 +170,14 @@ public class ComicRemoteDataSource {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        result.add(comic);
+                        assert comic != null;
+                        if (comic.getId() == null) {
+                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                            result.add(comic);
+                        }else{
+                            result.add(comic);
+                        }
+
                     }
 
                     result.sort((a, b) -> {
@@ -193,8 +211,13 @@ public class ComicRemoteDataSource {
                         List<ComicDtoWithTags> result = new ArrayList<>();
                         for (DocumentSnapshot doc : snapshot.getDocuments()) {
                             ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                            result.add(comic);
-                        }
+                            assert comic != null;
+                            if (comic.getId() == null) {
+                                comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                result.add(comic);
+                            }else{
+                                result.add(comic);
+                            }                        }
                         callback.onComplete(result);
                     })
                     .addOnFailureListener(e -> {
@@ -212,8 +235,13 @@ public class ComicRemoteDataSource {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        result.add(comic);
-                    }
+                        assert comic != null;
+                        if (comic.getId() == null) {
+                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                            result.add(comic);
+                        }else{
+                            result.add(comic);
+                        }                    }
 
                     result.sort((a, b) -> {
                         int r = Double.compare(b.getRating(), a.getRating());
