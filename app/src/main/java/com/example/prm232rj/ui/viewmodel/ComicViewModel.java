@@ -30,9 +30,10 @@ public class ComicViewModel extends ViewModel {
     private final MutableLiveData<List<ComicDtoBanner>> bannerList = new MutableLiveData<>();
     private final MutableLiveData<List<ComicDtoPreview>> previewList = new MutableLiveData<>();
     private final MutableLiveData<List<ComicDtoWithTags>> comicsTop3 = new MutableLiveData<>();
-
-    private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> comicsByTagMap = new HashMap<>();
-
+    private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> homeTagMap = new HashMap<>();
+    private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> fullTagMap = new HashMap<>();
+    private final Map<String, ListenerRegistration> homeTagListeners = new HashMap<>();
+    private ListenerRegistration comicTopListener;
     private ListenerRegistration bannerListener;
 
     @Inject
@@ -87,8 +88,13 @@ public class ComicViewModel extends ViewModel {
         return comicsTop3;
     }
 
-    public void loadComicsTop3() {
-        repository.getComicsHotTop3(new ComicRemoteDataSource.FirebaseCallback<>() {
+    public void loadComicsTop3(Activity activity) {
+        if (comicTopListener != null) {
+            comicTopListener.remove();
+        }
+
+
+        comicTopListener = repository.getComicsHotTop3(activity, new ComicRemoteDataSource.FirebaseCallback<>() {
             @Override
             public void onComplete(List<ComicDtoWithTags> result) {
                 comicsTop3.postValue(result);
@@ -102,22 +108,53 @@ public class ComicViewModel extends ViewModel {
     }
 
     // ------------------- COMICS BY TAGS ---------------------
-    public LiveData<List<ComicDtoWithTags>> getComicsByTag(String tagId) {
-        Log.d("mykey","tagid: " + tagId);
-        if (!comicsByTagMap.containsKey(tagId)) {
-            comicsByTagMap.put(tagId, new MutableLiveData<>());
+
+    public LiveData<List<ComicDtoWithTags>> getComicsForHome(String tagId) {
+        if (!homeTagMap.containsKey(tagId)) {
+            MutableLiveData<List<ComicDtoWithTags>> liveData = new MutableLiveData<>();
+            homeTagMap.put(tagId, liveData);
         }
-        return comicsByTagMap.get(tagId);
+        return homeTagMap.get(tagId);
     }
 
-    public void loadComicsByTags(String tagIds) {
+    public LiveData<List<ComicDtoWithTags>> getComicsForList(String tagId) {
+        if (!fullTagMap.containsKey(tagId)) {
+            MutableLiveData<List<ComicDtoWithTags>> liveData = new MutableLiveData<>();
+            fullTagMap.put(tagId, liveData);
+        }
+        return fullTagMap.get(tagId);
+    }
+
+    public void loadComicsByTagForHome(Activity activity, String tagId) {
+        // Nếu đã có listener cũ, huỷ trước khi đăng ký mới
+        if (homeTagListeners.containsKey(tagId)) {
+            homeTagListeners.get(tagId).remove();
+        }
+
+        ListenerRegistration registration = repository.getComicsByTagIdTop(activity, tagId, new ComicRemoteDataSource.FirebaseCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result) {
+                homeTagMap.get(tagId).postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("ComicViewModel", "Failed to load tag: " + tagId, e);
+            }
+        });
+
+        homeTagListeners.put(tagId, registration);
+    }
+
+
+    public void loadComicsByTagForList(String tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
             // Trường hợp không có tag, gọi fallback
             repository.getComicsFallback(new ComicRemoteDataSource.FirebaseCallback<>() {
 
                 @Override
                 public void onComplete(List<ComicDtoWithTags> result) {
-                    comicsByTagMap.get("fallback").postValue(result);
+                    fullTagMap.get("fallback").postValue(result);
                 }
 
                 @Override
@@ -127,26 +164,32 @@ public class ComicViewModel extends ViewModel {
             });
         } else {
             // Có tagIds, gọi theo từng tag
-                repository.getComicsByTagIdPaging(tagIds, new ComicRemoteDataSource.FirebaseCallback<>() {
-                    @Override
-                    public void onComplete(List<ComicDtoWithTags> result) {
-                        comicsByTagMap.get(tagIds).postValue(result);
-                    }
+            repository.getComicsByTagIdPaging(tagIds, new ComicRemoteDataSource.FirebaseCallback<>() {
+                @Override
+                public void onComplete(List<ComicDtoWithTags> result) {
+                    fullTagMap.get(tagIds).postValue(result);
+                }
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.e("ComicViewModel", "Failed to load tag: " + tagIds, e);
-                    }
-                });
-            }
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("ComicViewModel", "Failed to load tag: " + tagIds, e);
+                }
+            });
+        }
     }
-
 
     @Override
     protected void onCleared() {
         super.onCleared();
         if (bannerListener != null) {
             bannerListener.remove();
+        }
+        for (ListenerRegistration reg : homeTagListeners.values()) {
+            reg.remove();
+        }
+        homeTagListeners.clear();
+        if (comicTopListener != null) {
+            comicTopListener.remove();
         }
     }
 }

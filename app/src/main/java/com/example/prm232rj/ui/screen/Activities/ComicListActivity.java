@@ -60,21 +60,21 @@ public class ComicListActivity extends AppCompatActivity {
         String tagKey = (tagId != null && !tagId.trim().isEmpty()) ? tagId : "fallback";
         Log.d("mykey","tagKey:" + tagKey);
         // Quan sát trước
-        viewModel.getComicsByTag(tagKey).observe(this, comics -> {
+        viewModel.getComicsForList(tagKey).observe(this, comics -> {
             Log.d("mykey", "Observed " + tagKey + " comics: " + (comics != null ? comics.size() : -1));
             adapter.setData(comics);
         });
 
-        viewModel.loadComicsByTags(tagKey);
+        viewModel.loadComicsByTagForList(tagKey);
     }
 
 
     private void loadData() {
         binding.setTitle(Objects.requireNonNullElse(tagName, "Danh sách truyện"));
         if (tagId != null && !tagId.trim().isEmpty()) {
-            viewModel.loadComicsByTags(tagId);
+            viewModel.loadComicsByTagForList(tagId);
         } else {
-            viewModel.loadComicsByTags("");
+            viewModel.loadComicsByTagForList("");
         }
     }
 

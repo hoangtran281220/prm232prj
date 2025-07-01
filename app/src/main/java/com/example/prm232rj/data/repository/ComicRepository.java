@@ -51,6 +51,10 @@ public class ComicRepository {
         remoteDataSource.getComicsByTagIdPaging(tagId, callback);
     }
 
+    public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback)
+    {
+        return remoteDataSource.getComicsByTagIdTop(activity, tagId, callback);
+    }
     // Thêm method để lấy comic theo ID
     public void getComicById(String comicId, ComicRemoteDataSource.FirebaseCallback<Comic> callback) {
         remoteDataSource.getComicById(comicId, callback);
@@ -68,8 +72,8 @@ public class ComicRepository {
         remoteDataSource.getTagsByIds(ids, callback);
     }
 
-    public void getComicsHotTop3(ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback){
-        remoteDataSource.getComicsHotTop3(callback);
+    public ListenerRegistration getComicsHotTop3(Activity activity, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback){
+        return  remoteDataSource.getComicsHotTop3(activity, callback);
     }
 
     public void getChapterByIdForReading(String comicId, String chapterId, ComicRemoteDataSource.FirebaseCallback<ChapterReadingDto> callback) {

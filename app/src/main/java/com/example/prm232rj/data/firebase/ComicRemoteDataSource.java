@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 public class ComicRemoteDataSource {
     private final FirebaseFirestore db;
     private static final String TAG = "ComicRemoteDataSource";
+
     @Inject
     public ComicRemoteDataSource() {
         this.db = FirebaseFirestore.getInstance();
@@ -99,32 +100,41 @@ public class ComicRemoteDataSource {
 
     }
 
-    public void getComicsHotTop3(FirebaseCallback<ComicDtoWithTags> callback){
-        db.collection("comics")
+    //top manga hot ở home page
+    public ListenerRegistration getComicsHotTop3(Activity activity, FirebaseCallback<ComicDtoWithTags> callback) {
+        return db.collection("comics")
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("Rating", Query.Direction.DESCENDING)
-                .limit(9) // Có thể giới hạn số lượng
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    List<ComicDtoWithTags> result = new ArrayList<>();
-                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        assert comic != null;
-                        if (comic.getId() == null) {
-                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
-                            result.add(comic);
-                        }else{
-                            result.add(comic);
-                        }                    }
-                    callback.onComplete(result);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
-                    callback.onFailure(e);
+                .limit(9)
+                .addSnapshotListener(activity, (snapshot, error) -> {
+                    if (error != null) {
+                        Log.e("getComicsHotTop3", "Lỗi khi lắng nghe dữ liệu Firestore", error);
+                        callback.onFailure(error);
+                        return;
+                    }
+
+                    if (snapshot != null) {
+                        List<ComicDtoWithTags> result = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                            if (comic != null) {
+                                if (comic.getId() == null) {
+                                    comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                }
+                                result.add(comic);
+                            }
+                        }
+
+                        callback.onComplete(result);
+                    } else {
+                        callback.onComplete(Collections.emptyList());
+                    }
                 });
     }
 
+
+    //cho filter
     public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
         if (tagIds == null || tagIds.isEmpty()) {
             // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
@@ -139,7 +149,6 @@ public class ComicRemoteDataSource {
         }
         db.collection("comics")
                 .whereArrayContainsAny("TagId", tagIds)
-                .limit(10)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
@@ -149,7 +158,7 @@ public class ComicRemoteDataSource {
                         if (comic.getId() == null) {
                             comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
                             result.add(comic);
-                        }else{
+                        } else {
                             result.add(comic);
                         }
 
@@ -172,6 +181,7 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    //list truyện hot
     public void getComicsFallback(FirebaseCallback<ComicDtoWithTags> callback) {
         db.collection("comics")
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
@@ -193,7 +203,7 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
+    //cho list để kết hợp paging
     public void getComicsByTagIdPaging(String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
         // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
         db.collection("comics")
@@ -227,6 +237,51 @@ public class ComicRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    //cho list để get top manga theo từng tagid
+    public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
+        return db.collection("comics")
+                .whereArrayContains("TagId", tagId)
+                .limit(8)
+                .addSnapshotListener(activity, (snapshot, error) -> {
+                    if (error != null) {
+                        callback.onFailure(error);
+                        return;
+                    }
+
+                    if (snapshot != null && !snapshot.isEmpty()) {
+                        List<ComicDtoWithTags> result = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                            if (comic != null) {
+                                if (comic.getId() == null) {
+                                    comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                }
+                                result.add(comic);
+                            }
+                        }
+
+                        // ✅ Sắp xếp thủ công
+                        result.sort((a, b) -> {
+                            int r = Double.compare(b.getRating(), a.getRating());
+                            if (r != 0) return r;
+
+                            r = Long.compare(b.getViews(), a.getViews());
+                            if (r != 0) return r;
+
+                            if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
+                                return b.getUpdatedAt().compareTo(a.getUpdatedAt());
+
+                            return 0;
+                        });
+
+                        callback.onComplete(result);
+                    } else {
+                        callback.onComplete(Collections.emptyList());
+                    }
+                });
+    }
+
 
     public void getRecentComics(int limit, FirebaseCallback<Comic> callback) {
         db.collection("comics")

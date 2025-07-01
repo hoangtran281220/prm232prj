@@ -98,9 +98,9 @@ public class HomeFragment extends Fragment {
 
         view.post(() -> {
             viewModel.loadBanners(requireActivity());
-            viewModel.loadComicsTop3();
-            viewModel.loadComicsByTags("4");
-            viewModel.loadComicsByTags("2");
+            viewModel.loadComicsTop3(getActivity());
+            viewModel.loadComicsByTagForHome(getActivity(),"4");
+            viewModel.loadComicsByTagForHome(getActivity(),"2");
         });
     }
 
@@ -141,11 +141,11 @@ public class HomeFragment extends Fragment {
                 adapter.updateBannerSection(banners)
         );
 
-        viewModel.getComicsByTag("4").observe(getViewLifecycleOwner(), comics -> {
+        viewModel.getComicsForHome("4").observe(getViewLifecycleOwner(), comics -> {
             adapter.updateComicSection("comedic", new ArrayList<>(comics));
         });
 
-        viewModel.getComicsByTag("2").observe(getViewLifecycleOwner(), comics -> {
+        viewModel.getComicsForHome("2").observe(getViewLifecycleOwner(), comics -> {
             adapter.updateComicSection("adventure", new ArrayList<>(comics));
         });
 
