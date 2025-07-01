@@ -43,8 +43,12 @@ public class ComicRepository {
         remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
 
-    public void getComicsByTagIdsPaging(String tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
-        remoteDataSource.getComicsByTagIdsPaging(tagIds, callback);
+    public void getComicsFallback(ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        remoteDataSource.getComicsFallback(callback);
+    }
+
+    public void getComicsByTagIdPaging(String tagId, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        remoteDataSource.getComicsByTagIdPaging(tagId, callback);
     }
 
     // Thêm method để lấy comic theo ID

@@ -99,8 +99,8 @@ public class HomeFragment extends Fragment {
         view.post(() -> {
             viewModel.loadBanners(requireActivity());
             viewModel.loadComicsTop3();
-            viewModel.loadComicsByTags(Collections.singletonList("4"));
-            viewModel.loadComicsByTags(Collections.singletonList("2"));
+            viewModel.loadComicsByTags("4");
+            viewModel.loadComicsByTags("2");
         });
     }
 
@@ -108,18 +108,21 @@ public class HomeFragment extends Fragment {
         List<HomeSectionItem> sectionList = new ArrayList<>();
 
         sectionList.add(new HomeSectionItem(SectionViewType.BANNER));
+
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
             sectionTitle = "Truyện Hot"; sectionTag = "hot";
         }});
+
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
             sectionTag = "hot";
         }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
-            sectionTitle = "Hành động"; sectionTag = "action";
+            sectionTitle = "Truyện cười"; sectionTag = "comedic";
         }});
+
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
-            sectionTag = "action";
+            sectionTag = "comedic";
         }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
@@ -139,7 +142,7 @@ public class HomeFragment extends Fragment {
         );
 
         viewModel.getComicsByTag("4").observe(getViewLifecycleOwner(), comics -> {
-            adapter.updateComicSection("action", new ArrayList<>(comics));
+            adapter.updateComicSection("comedic", new ArrayList<>(comics));
         });
 
         viewModel.getComicsByTag("2").observe(getViewLifecycleOwner(), comics -> {

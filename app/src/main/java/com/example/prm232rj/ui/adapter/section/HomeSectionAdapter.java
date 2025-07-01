@@ -67,7 +67,7 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder instanceof BannerViewHolder) {
             ((BannerViewHolder) holder).bind(item.banners);
         } else if (holder instanceof SectionHeaderViewHolder) {
-            ((SectionHeaderViewHolder) holder).bind(item.sectionTitle);
+            ((SectionHeaderViewHolder) holder).bind(item.sectionTitle, item.sectionTag);
         } else if (holder instanceof ComicListVerticalViewHolder) {
             ((ComicListVerticalViewHolder) holder).bind(item.comics);
         } else if (holder instanceof ComicListHorizontalViewHolder) {
@@ -124,37 +124,43 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             this.binding = binding;
         }
 
-        void bind(String titleText) {
-            binding.tvSectionTitle.setText(titleText);
+        void bind(String sectionTitle, String sectionTag) {
+            binding.tvSectionTitle.setText(sectionTitle);
 
-            // Tuỳ chỉnh logic theo title (hoặc dùng sectionTag nếu muốn chính xác hơn)
-            if (titleText.equals("Hành động")) {
-                binding.btnSeeAllHot.setOnClickListener(v -> {
-                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
-                    intent.putExtra("TAG_ID", "4"); // Gắn tag phù hợp
-                    intent.putExtra("TAG_NAME", "Hành Động");
-                    binding.getRoot().getContext().startActivity(intent);
-                });
-            } else if(titleText.equals("Truyện Hot")){
-                // Ẩn hoặc disable nếu không cần xử lý
-                binding.btnSeeAllHot.setOnClickListener(v->{
-                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
-                    intent.putExtra("TAG_NAME", "Truyện hot");
-                    binding.getRoot().getContext().startActivity(intent);
-                });
+            switch (sectionTag) {
+                case "comedic":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "4"); // ID tag cho "Truyện cười"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
 
-            }else if (titleText.equals("Manga Phiêu lưu")) {
-                binding.btnSeeAllHot.setOnClickListener(v -> {
-                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
-                    intent.putExtra("TAG_ID", "2");
-                    intent.putExtra("TAG_NAME", "Manga Phiêu lưu");
-                    binding.getRoot().getContext().startActivity(intent);
-                });
-            }
-            else{
-                binding.btnSeeAllHot.setOnClickListener(null);
+                case "hot":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        intent.putExtra("TAG_ID", "");
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
+                case "adventure":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "2"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
+                default:
+                    binding.btnSeeAllHot.setOnClickListener(null);
+                    break;
             }
         }
+
     }
 
     static class ComicListHorizontalViewHolder extends RecyclerView.ViewHolder {

@@ -103,31 +103,44 @@ public class ComicViewModel extends ViewModel {
 
     // ------------------- COMICS BY TAGS ---------------------
     public LiveData<List<ComicDtoWithTags>> getComicsByTag(String tagId) {
+        Log.d("mykey","tagid: " + tagId);
         if (!comicsByTagMap.containsKey(tagId)) {
             comicsByTagMap.put(tagId, new MutableLiveData<>());
         }
         return comicsByTagMap.get(tagId);
     }
 
-    public void loadComicsByTags(List<String> tagIds) {
-        for (String tagId : tagIds) {
-            if (!comicsByTagMap.containsKey(tagId)) {
-                comicsByTagMap.put(tagId, new MutableLiveData<>());
-            }
+    public void loadComicsByTags(String tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            // Trường hợp không có tag, gọi fallback
+            repository.getComicsFallback(new ComicRemoteDataSource.FirebaseCallback<>() {
 
-            repository.getComicsByTagIds(Collections.singletonList(tagId), new ComicRemoteDataSource.FirebaseCallback<>() {
                 @Override
                 public void onComplete(List<ComicDtoWithTags> result) {
-                    comicsByTagMap.get(tagId).postValue(result);
+                    comicsByTagMap.get("fallback").postValue(result);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    Log.e("ComicViewModel", "Failed to load tag: " + tagId, e);
+                    Log.e("mytag1", "Failed to load fallback comics", e);
                 }
             });
-        }
+        } else {
+            // Có tagIds, gọi theo từng tag
+                repository.getComicsByTagIdPaging(tagIds, new ComicRemoteDataSource.FirebaseCallback<>() {
+                    @Override
+                    public void onComplete(List<ComicDtoWithTags> result) {
+                        comicsByTagMap.get(tagIds).postValue(result);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("ComicViewModel", "Failed to load tag: " + tagIds, e);
+                    }
+                });
+            }
     }
+
 
     @Override
     protected void onCleared() {

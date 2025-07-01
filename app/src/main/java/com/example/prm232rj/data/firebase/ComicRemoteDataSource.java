@@ -126,34 +126,9 @@ public class ComicRemoteDataSource {
     }
 
     public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
-
         if (tagIds == null || tagIds.isEmpty()) {
-
             // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
-            db.collection("comics")
-                    .orderBy("UpdatedAt", Query.Direction.DESCENDING)
-                    .orderBy("Views", Query.Direction.DESCENDING)
-                    .orderBy("Rating", Query.Direction.DESCENDING)
-                    .limit(10) // Có thể giới hạn số lượng
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
-                        List<ComicDtoWithTags> result = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                            assert comic != null;
-                            if (comic.getId() == null) {
-                                comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
-                                result.add(comic);
-                            }else{
-                                result.add(comic);
-                            }
-                        }
-                        callback.onComplete(result);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
-                        callback.onFailure(e);
-                    });
+            callback.onFailure(new IllegalArgumentException("tagIds không được null hoặc rỗng"));
             return;
         }
 
@@ -197,39 +172,32 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getComicsByTagIdsPaging(String tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
+    public void getComicsFallback(FirebaseCallback<ComicDtoWithTags> callback) {
+        db.collection("comics")
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .limit(10)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null) {
+                            if (comic.getId() == null) comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
-        if (tagIds == null || tagIds.isEmpty()) {
 
-            // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
-            db.collection("comics")
-                    .orderBy("UpdatedAt", Query.Direction.DESCENDING)
-                    .orderBy("Views", Query.Direction.DESCENDING)
-                    .orderBy("Rating", Query.Direction.DESCENDING)
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
-                        List<ComicDtoWithTags> result = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                            assert comic != null;
-                            if (comic.getId() == null) {
-                                comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
-                                result.add(comic);
-                            }else{
-                                result.add(comic);
-                            }                        }
-                        callback.onComplete(result);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
-                        callback.onFailure(e);
-                    });
-            return;
-        }
-
+    public void getComicsByTagIdPaging(String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
         // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
         db.collection("comics")
-                .whereArrayContains("TagId", tagIds)
+                .whereArrayContains("TagId", tagId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
@@ -238,10 +206,10 @@ public class ComicRemoteDataSource {
                         assert comic != null;
                         if (comic.getId() == null) {
                             comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
-                            result.add(comic);
-                        }else{
-                            result.add(comic);
-                        }                    }
+                        }
+                        result.add(comic);
+                        Log.d("getComicsByTagIdPaging", "Thêm truyện: " + comic.getTitle() + " (ID: " + comic.getId() + ")");
+                    }
 
                     result.sort((a, b) -> {
                         int r = Double.compare(b.getRating(), a.getRating());

@@ -13,6 +13,7 @@ import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -54,19 +55,26 @@ public class ComicListActivity extends AppCompatActivity {
 
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
-        viewModel.getComicsByTag(tagId).observe(this, comics -> {
+
+        Log.d("mykey", "tagid: " + tagId);
+        String tagKey = (tagId != null && !tagId.trim().isEmpty()) ? tagId : "fallback";
+        Log.d("mykey","tagKey:" + tagKey);
+        // Quan sát trước
+        viewModel.getComicsByTag(tagKey).observe(this, comics -> {
+            Log.d("mykey", "Observed " + tagKey + " comics: " + (comics != null ? comics.size() : -1));
             adapter.setData(comics);
         });
+
+        viewModel.loadComicsByTags(tagKey);
     }
+
 
     private void loadData() {
         binding.setTitle(Objects.requireNonNullElse(tagName, "Danh sách truyện"));
-        Log.d("mytagt","id: " + tagId);
-        Log.d("mytagt","name: "+tagName);
         if (tagId != null && !tagId.trim().isEmpty()) {
-            viewModel.loadComicsByTags(Collections.singletonList(tagId));
+            viewModel.loadComicsByTags(tagId);
         } else {
-            viewModel.loadComicsByTags(Collections.emptyList());
+            viewModel.loadComicsByTags("");
         }
     }
 
