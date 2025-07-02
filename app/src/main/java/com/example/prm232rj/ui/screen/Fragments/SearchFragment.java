@@ -2,6 +2,8 @@ package com.example.prm232rj.ui.screen.Fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.prm232rj.R;
+import com.example.prm232rj.databinding.FragmentSearchBinding;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -16,7 +19,7 @@ import com.example.prm232rj.R;
  * create an instance of this fragment.
  */
 public class SearchFragment extends Fragment {
-
+    private FragmentSearchBinding binding;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -61,6 +64,23 @@ public class SearchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        binding = FragmentSearchBinding.inflate(inflater, container, false);
+        return binding.getRoot();    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        binding.toolbarSearch.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_search) {
+
+                return true;
+            } else if (item.getItemId() == R.id.action_filter) {
+                FilterBottomSheetFragment bottomSheet = new FilterBottomSheetFragment();
+                bottomSheet.show(getParentFragmentManager(), "FilterBottomSheet");
+                return true;
+            }
+            return false;
+        });
     }
 }

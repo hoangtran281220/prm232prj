@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.screen.Fragments.SearchFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
 
-</FrameLayout>
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarSearch"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:title=""
+            app:titleTextColor="@android:color/white"
+            app:menu="@menu/menu_search_toolbar"
+            app:contentInsetStart="0dp" />
+
+        <!-- Nội dung -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:padding="16dp">
+
+            <!-- Text khi không có kết quả -->
+            <TextView
+                android:id="@+id/tvNoResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Không tìm thấy kết quả"
+                android:textColor="#AAAAAA"
+                android:gravity="center"
+                android:visibility="gone"
+                android:paddingTop="32dp" />
+
+            <!-- Danh sách truyện -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewSearch"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingBottom="8dp" />
+
+        </LinearLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
