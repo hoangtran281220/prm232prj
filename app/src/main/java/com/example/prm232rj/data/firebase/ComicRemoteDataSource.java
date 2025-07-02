@@ -9,6 +9,7 @@ import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
+import com.example.prm232rj.data.dto.TagDto;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
@@ -187,7 +188,6 @@ public class ComicRemoteDataSource {
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("Rating", Query.Direction.DESCENDING)
-                .limit(10)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
@@ -453,6 +453,26 @@ public class ComicRemoteDataSource {
                     callback.onFailure(e);
                 });
     }
+
+    public void getAllTags(FirebaseCallback<TagDto> callback) {
+        db.collection("Tags")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<TagDto> tagList = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String id = doc.getId();
+                        String name = doc.getString("Name");
+
+                        if (name != null) {
+                            tagList.add(new TagDto(id, name));
+                        }
+                    }
+                    callback.onComplete(tagList);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
 
 

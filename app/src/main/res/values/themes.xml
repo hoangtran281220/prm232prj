@@ -5,5 +5,10 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <style name="CustomDialogStyle" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
     <style name="Theme.Prm232rj" parent="Base.Theme.Prm232rj" />
 </resources>

@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 
 import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentSearchBinding;
+import com.example.prm232rj.ui.screen.Dialogs.FilterComicDialogFragment;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -76,8 +79,14 @@ public class SearchFragment extends Fragment {
 
                 return true;
             } else if (item.getItemId() == R.id.action_filter) {
-                FilterBottomSheetFragment bottomSheet = new FilterBottomSheetFragment();
-                bottomSheet.show(getParentFragmentManager(), "FilterBottomSheet");
+                // Hiển thị dialog lọc truyện
+                FilterComicDialogFragment dialog = new FilterComicDialogFragment(
+                        (tagIds, sort, status) -> {
+                            // Gọi ViewModel để load dữ liệu truyện theo bộ lọc
+                            //viewModel.loadComicsByFilters(tagIds, sort, status);
+                        }
+                );
+                dialog.show(getChildFragmentManager(), "FilterDialog");
                 return true;
             }
             return false;
