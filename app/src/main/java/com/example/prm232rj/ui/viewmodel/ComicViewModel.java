@@ -36,6 +36,8 @@ public class ComicViewModel extends ViewModel {
     private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> homeTagMap = new HashMap<>();
     private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> fullTagMap = new HashMap<>();
     private final Map<String, ListenerRegistration> homeTagListeners = new HashMap<>();
+    private final MutableLiveData<List<ComicDtoWithTags>> filteredComics = new MutableLiveData<>();
+    private String currentFilterKey;
     private ListenerRegistration comicTopListener;
     private ListenerRegistration bannerListener;
     private static final int PAGE_SIZE = 12;
@@ -233,6 +235,18 @@ public class ComicViewModel extends ViewModel {
             });
         }
     }
+
+    public LiveData<List<ComicDtoWithTags>> getFilteredComics() {
+        return filteredComics;
+    }
+
+    private String makeFilterKey(List<String> tagIds, String status, String sortBy) {
+        String tagPart = tagIds == null || tagIds.isEmpty() ? "ALLTAGS" : String.join(",", tagIds);
+        String statusPart = status == null ? "ALLSTATUS" : status;
+        String sortPart = sortBy == null ? "UpdatedAt" : sortBy;
+        return tagPart + "|" + statusPart + "|" + sortPart;
+    }
+
 
     @Override
     protected void onCleared() {

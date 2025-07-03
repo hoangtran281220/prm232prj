@@ -30,6 +30,7 @@ public class ComicRepository {
 
     private DocumentSnapshot lastVisible = null;
     private DocumentSnapshot fallbackLastVisible = null;
+    private DocumentSnapshot filterLastVisible = null;
 
     @Inject
     public ComicRepository(ComicRemoteDataSource remoteDataSource) {
@@ -42,6 +43,10 @@ public class ComicRepository {
 
     public void resetFallbackPaging() {
         fallbackLastVisible = null;
+    }
+
+    public void resetFilterVisible(){
+        filterLastVisible = null;
     }
 
     public ListenerRegistration getComicBanners(Activity activity, ComicRemoteDataSource.FirebaseCallback<ComicDtoBanner> callback) {
@@ -99,6 +104,30 @@ public class ComicRepository {
     {
         return remoteDataSource.getComicsByTagIdTop(activity, tagId, callback);
     }
+
+    public void getFilteredComics(List<String> tagIds, String status, String sortBy,
+                                  boolean isFirstPage, int pageSize,
+                                  ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags> callback) {
+        if (isFirstPage) {
+            filterLastVisible = null;
+        }
+
+        remoteDataSource.getFilteredComics(tagIds, status, sortBy, filterLastVisible, pageSize,
+                new ComicRemoteDataSource.FirebasePagingCallback<>() {
+                    @Override
+                    public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot newLastVisible) {
+                        filterLastVisible = newLastVisible;
+                        callback.onComplete(result, newLastVisible);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+
     // Thêm method để lấy comic theo ID
     public void getComicById(String comicId, ComicRemoteDataSource.FirebaseCallback<Comic> callback) {
         remoteDataSource.getComicById(comicId, callback);

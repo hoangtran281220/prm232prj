@@ -159,6 +159,30 @@ public class FilterComicDialogFragment extends DialogFragment {
             dismiss();
         });
 
+        binding.btnResetFilter.setOnClickListener(v -> {
+            // Giá trị mặc định
+            selectedTagIds.clear();
+            String defaultSort = "UpdatedAt";
+            String defaultStatus = "all";
+
+            // Cập nhật UI
+            binding.spinnerSort.setSelection(0); // "Ngày cập nhật"
+            binding.radioGroupStatus.check(R.id.radioAll);
+
+            for (int i = 0; i < binding.chipGroupTags.getChildCount(); i++) {
+                View chipView = binding.chipGroupTags.getChildAt(i);
+                if (chipView instanceof Chip) {
+                    ((Chip) chipView).setChecked(false);
+                }
+            }
+
+            binding.tvSelectedTags.setText("Chưa chọn");
+
+            // (Tùy chọn) Toast hoặc thông báo
+            // Toast.makeText(getContext(), "Đã đặt lại bộ lọc về mặc định", Toast.LENGTH_SHORT).show();
+        });
+
+
         binding.btnCancelFilter.setOnClickListener(v -> dismiss());
     }
 

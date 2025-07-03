@@ -219,6 +219,7 @@ public class ComicRemoteDataSource {
                 .orderBy("Rating", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .whereEqualTo("Status","Đang tiến hành")
                 .limit(pageSize);
 
         if (lastVisible != null) {
@@ -241,6 +242,64 @@ public class ComicRemoteDataSource {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+    //filter
+    public void getFilteredComics(List<String> tagIds, String status, String sortBy,
+                                  @Nullable DocumentSnapshot lastVisible, int pageSize,
+                                  FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics");
+
+        // 1. Filter theo tagIds nếu có
+        if (tagIds != null && !tagIds.isEmpty()) {
+            if (tagIds.size() > 10) {
+                callback.onFailure(new IllegalArgumentException("Không được truyền quá 10 tagId"));
+                return;
+            }
+            query = query.whereArrayContainsAny("TagId", tagIds);
+        }
+
+        // 2. Filter theo status nếu không phải là "Tất cả"
+        if (status != null && !status.equalsIgnoreCase("Tất cả")) {
+            query = query.whereEqualTo("Status", status);
+        }
+
+        // 3. Order by duy nhất theo sortBy
+        switch (sortBy != null ? sortBy : "") {
+            case "Rating":
+                query = query.orderBy("Rating", Query.Direction.DESCENDING);
+                break;
+            case "Views":
+                query = query.orderBy("Views", Query.Direction.DESCENDING);
+                break;
+            case "UpdatedAt":
+            default:
+                query = query.orderBy("UpdatedAt", Query.Direction.DESCENDING);
+                break;
+        }
+
+        // 4. Pagination
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
+        query = query.limit(pageSize);
+
+        // 5. Execute
+        query.get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+                    DocumentSnapshot newLastVisible = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLastVisible);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
 
     //cho list để get top manga theo từng tagid
