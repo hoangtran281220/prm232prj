@@ -219,7 +219,6 @@ public class ComicRemoteDataSource {
                 .orderBy("Rating", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
-                .whereEqualTo("Status","Đang tiến hành")
                 .limit(pageSize);
 
         if (lastVisible != null) {
@@ -258,7 +257,7 @@ public class ComicRemoteDataSource {
         }
 
         // 2. Filter theo status nếu không phải là "Tất cả"
-        if (status != null && !status.equalsIgnoreCase("Tất cả")) {
+        if (status != null && !status.equalsIgnoreCase("all")) {
             query = query.whereEqualTo("Status", status);
         }
 

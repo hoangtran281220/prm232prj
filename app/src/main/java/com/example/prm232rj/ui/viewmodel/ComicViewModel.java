@@ -37,7 +37,6 @@ public class ComicViewModel extends ViewModel {
     private final Map<String, MutableLiveData<List<ComicDtoWithTags>>> fullTagMap = new HashMap<>();
     private final Map<String, ListenerRegistration> homeTagListeners = new HashMap<>();
     private final MutableLiveData<List<ComicDtoWithTags>> filteredComics = new MutableLiveData<>();
-    private String currentFilterKey;
     private ListenerRegistration comicTopListener;
     private ListenerRegistration bannerListener;
     private static final int PAGE_SIZE = 12;
@@ -197,8 +196,8 @@ public class ComicViewModel extends ViewModel {
     }
 
     public void loadNextPageForTagList() {
-        if (currentPagingTagId == null) return;
-
+        if (repository.isLastFallbackPage() && currentPagingTagId.equals("fallback")) return;
+        if (repository.isLastTagPage() && !currentPagingTagId.equals("fallback")) return;
         boolean isFallback = currentPagingTagId.equals("fallback");
 
         if (isFallback) {
@@ -218,7 +217,7 @@ public class ComicViewModel extends ViewModel {
                 }
             });
         } else {
-            repository.getComicsByTagIdPaging(currentPagingTagId, false, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
+            repository.getComicsByTagIdPaging(currentPagingTagId, false, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<>() {
                 @Override
                 public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
                     List<ComicDtoWithTags> current = fullTagMap.get(currentPagingTagId).getValue();
@@ -236,15 +235,43 @@ public class ComicViewModel extends ViewModel {
         }
     }
 
+    //Filter comics
     public LiveData<List<ComicDtoWithTags>> getFilteredComics() {
         return filteredComics;
     }
 
-    private String makeFilterKey(List<String> tagIds, String status, String sortBy) {
-        String tagPart = tagIds == null || tagIds.isEmpty() ? "ALLTAGS" : String.join(",", tagIds);
-        String statusPart = status == null ? "ALLSTATUS" : status;
-        String sortPart = sortBy == null ? "UpdatedAt" : sortBy;
-        return tagPart + "|" + statusPart + "|" + sortPart;
+    public void loadFilteredComics(List<String> tagIds, String status, String sortBy) {
+        repository.resetFilterVisible();
+        repository.getFilteredComics(tagIds, status, sortBy, true, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot newLastVisible) {
+                filteredComics.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("ComicViewModel", "Failed to load filtered comics", e);
+            }
+        });
+    }
+
+    public void loadNextPageFiltered(List<String> tagIds, String status, String sortBy) {
+        if (repository.isLastFilteredPage()) return;
+
+        repository.getFilteredComics(tagIds, status, sortBy, false, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot newLastVisible) {
+                List<ComicDtoWithTags> current = filteredComics.getValue();
+                if (current == null) current = new ArrayList<>();
+                current.addAll(result);
+                filteredComics.postValue(current);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("ComicViewModel", "Failed to load next page of filtered comics", e);
+            }
+        });
     }
 
 

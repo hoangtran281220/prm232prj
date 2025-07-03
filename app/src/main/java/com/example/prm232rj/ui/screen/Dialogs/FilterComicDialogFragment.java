@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -95,8 +96,8 @@ public class FilterComicDialogFragment extends DialogFragment {
         }
 
         switch (savedStatus) {
-            case "completed": binding.radioGroupStatus.check(R.id.radioCompleted); break;
-            case "ongoing": binding.radioGroupStatus.check(R.id.radioOngoing); break;
+            case "Hoàn thành": binding.radioGroupStatus.check(R.id.radioCompleted); break;
+            case "Đang tiến hành": binding.radioGroupStatus.check(R.id.radioOngoing); break;
             default: binding.radioGroupStatus.check(R.id.radioAll);
         }
     }
@@ -114,15 +115,24 @@ public class FilterComicDialogFragment extends DialogFragment {
 
                 boolean isChecked = selectedTagIds.contains(tag.getId());
                 chip.setChecked(isChecked);
+                updateChipStyle(chip, isChecked);
+
                 if (isChecked) selectedTagNames.add(tag.getName());
 
                 chip.setOnCheckedChangeListener((buttonView, isCheckedNow) -> {
                     String id = (String) buttonView.getTag();
                     if (isCheckedNow) {
-                        if (!selectedTagIds.contains(id)) selectedTagIds.add(id);
+                        if (selectedTagIds.size() >= 10) {
+                            // Nếu đã đủ 10 tag, không cho chọn thêm và bỏ check lại
+                            buttonView.setChecked(false);
+                            Toast.makeText(getContext(), "Chỉ được chọn tối đa 10 thể loại", Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (!selectedTagIds.contains(id)) selectedTagIds.add(id);
+                        }
                     } else {
                         selectedTagIds.remove(id);
                     }
+                    updateChipStyle((Chip) buttonView, isCheckedNow);
                     updateSelectedTagsText();
                 });
 
@@ -132,6 +142,18 @@ public class FilterComicDialogFragment extends DialogFragment {
             updateSelectedTagsText();
         });
     }
+
+
+    private void updateChipStyle(Chip chip, boolean isChecked) {
+        if (isChecked) {
+            chip.setChipBackgroundColorResource(R.color.purple_500); // hoặc màu đậm khác
+            chip.setTextColor(getResources().getColor(android.R.color.white));
+        } else {
+            chip.setChipBackgroundColorResource(R.color.chip_default_background); // màu nhạt
+            chip.setTextColor(getResources().getColor(android.R.color.black));
+        }
+    }
+
 
     private void setupListeners() {
         binding.tvSelectedTags.setOnClickListener(v -> {
@@ -151,8 +173,8 @@ public class FilterComicDialogFragment extends DialogFragment {
 
             String statusField = "all";
             int checkedId = binding.radioGroupStatus.getCheckedRadioButtonId();
-            if (checkedId == R.id.radioCompleted) statusField = "completed";
-            else if (checkedId == R.id.radioOngoing) statusField = "ongoing";
+            if (checkedId == R.id.radioCompleted) statusField = "Hoàn thành";
+            else if (checkedId == R.id.radioOngoing) statusField = "Đang tiến hành";
 
             filterPrefManager.saveFilters(selectedTagIds, sortField, statusField);
             listener.onFilterApplied(new ArrayList<>(selectedTagIds), sortField, statusField);
