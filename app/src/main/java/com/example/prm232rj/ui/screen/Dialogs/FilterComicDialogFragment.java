@@ -57,7 +57,7 @@ public class FilterComicDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), com.google.android.material.R.style.Base_Theme_AppCompat_Dialog);
-        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        LayoutInflater inflater = getLayoutInflater();
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_filter_comic_dialog, null, false);
         builder.setView(binding.getRoot());
 

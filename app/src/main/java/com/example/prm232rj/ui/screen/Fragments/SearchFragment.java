@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -15,6 +17,7 @@ import com.example.prm232rj.databinding.FragmentSearchBinding;
 import com.example.prm232rj.ui.screen.Dialogs.FilterComicDialogFragment;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,7 +76,7 @@ public class SearchFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        binding.toolbarSearch.setTitle("Khám phá");
         binding.toolbarSearch.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_search) {
 

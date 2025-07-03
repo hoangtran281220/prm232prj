@@ -187,7 +187,7 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             // Tuỳ chọn nếu muốn snap từng page
             binding.topPager.setOffscreenPageLimit(1);
-            binding.topPager.setSaveEnabled(false); // tránh lỗi state khi nested
+            binding.topPager.setSaveEnabled(false);
         }
 
         void bind(List<IComicPreview> comics) {

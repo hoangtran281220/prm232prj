@@ -48,8 +48,6 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
         IComicPreview item = previewList.get(position);
         holder.binding.setItem(item);
         holder.binding.executePendingBindings();
-        Log.d("mytagzzz", "class = " + item.getClass().getName() + ", id = " + item.getId());
-
         holder.binding.getRoot().setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), ComicDetailActivity.class);
             intent.putExtra("COMIC_ID", item.getId()); // Truyền ID của truyện
@@ -59,7 +57,7 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
 
     @Override
     public int getItemCount() {
-        Log.d("mytag","size: " + previewList.size());
+        Log.d("paging","size: "+previewList.size());
         return previewList.size();
     }
 

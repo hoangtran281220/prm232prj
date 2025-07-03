@@ -3,6 +3,7 @@ package com.example.prm232rj.ui.viewmodel;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -12,8 +13,10 @@ import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
 import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.repository.ComicRepository;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +38,9 @@ public class ComicViewModel extends ViewModel {
     private final Map<String, ListenerRegistration> homeTagListeners = new HashMap<>();
     private ListenerRegistration comicTopListener;
     private ListenerRegistration bannerListener;
+    private static final int PAGE_SIZE = 12;
 
+    private String currentPagingTagId;
     @Inject
     public ComicViewModel(ComicRepository repository) {
         this.repository = repository;
@@ -147,32 +152,83 @@ public class ComicViewModel extends ViewModel {
     }
 
 
-    public void loadComicsByTagForList(String tagIds) {
-        if (tagIds == null || tagIds.isEmpty()) {
-            // Trường hợp không có tag, gọi fallback
-            repository.getComicsFallback(new ComicRemoteDataSource.FirebaseCallback<>() {
+    public void loadComicsByTagForList(String tagId) {
+        boolean isFallback = (tagId == null || tagId.trim().isEmpty());
+        String key = isFallback ? "fallback" : tagId;
 
+        currentPagingTagId = key;
+
+        // Nếu chưa có LiveData cho tag này, khởi tạo
+        if (!fullTagMap.containsKey(key)) {
+            fullTagMap.put(key, new MutableLiveData<>(new ArrayList<>()));
+        }
+
+        if (isFallback) {
+            repository.resetFallbackPaging();
+
+            repository.getComicsFallback(true, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
                 @Override
-                public void onComplete(List<ComicDtoWithTags> result) {
+                public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
                     fullTagMap.get("fallback").postValue(result);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    Log.e("mytag1", "Failed to load fallback comics", e);
+                    Log.e("ComicViewModel", "Failed to load fallback comics", e);
                 }
             });
         } else {
-            // Có tagIds, gọi theo từng tag
-            repository.getComicsByTagIdPaging(tagIds, new ComicRemoteDataSource.FirebaseCallback<>() {
+            repository.resetPaging();
+
+            repository.getComicsByTagIdPaging(tagId, true, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
                 @Override
-                public void onComplete(List<ComicDtoWithTags> result) {
-                    fullTagMap.get(tagIds).postValue(result);
+                public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
+                    fullTagMap.get(tagId).postValue(result);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    Log.e("ComicViewModel", "Failed to load tag: " + tagIds, e);
+                    Log.e("ComicViewModel", "Failed to load tag: " + tagId, e);
+                }
+            });
+        }
+    }
+
+    public void loadNextPageForTagList() {
+        if (currentPagingTagId == null) return;
+
+        boolean isFallback = currentPagingTagId.equals("fallback");
+
+        if (isFallback) {
+            repository.getComicsFallback(false, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
+                @Override
+                public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
+                    List<ComicDtoWithTags> current = fullTagMap.get("fallback").getValue();
+                    if (current != null) {
+                        current.addAll(result);
+                        fullTagMap.get("fallback").postValue(current);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("ComicViewModel", "Failed to load next fallback page", e);
+                }
+            });
+        } else {
+            repository.getComicsByTagIdPaging(currentPagingTagId, false, PAGE_SIZE, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
+                @Override
+                public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
+                    List<ComicDtoWithTags> current = fullTagMap.get(currentPagingTagId).getValue();
+                    if (current != null) {
+                        current.addAll(result);
+                        fullTagMap.get(currentPagingTagId).postValue(current);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("ComicViewModel", "Failed to load next page for: " + currentPagingTagId, e);
                 }
             });
         }

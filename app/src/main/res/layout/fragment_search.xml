@@ -11,8 +11,8 @@
             android:id="@+id/toolbarSearch"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:title=""
-            app:titleTextColor="@android:color/white"
+            android:title="Khám phá"
+            app:titleTextColor="@android:color/black"
             app:menu="@menu/menu_search_toolbar"
             app:contentInsetStart="0dp" />
 

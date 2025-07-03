@@ -3,6 +3,7 @@ package com.example.prm232rj.data.firebase;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.prm232rj.data.dto.ChapterReadingDto;
@@ -183,12 +184,18 @@ public class ComicRemoteDataSource {
     }
 
     //list truyện hot
-    public void getComicsFallback(FirebaseCallback<ComicDtoWithTags> callback) {
-        db.collection("comics")
+    public void getComicsFallback(@Nullable DocumentSnapshot lastVisible, int pageSize, FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics")
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("Rating", Query.Direction.DESCENDING)
-                .get()
+                .limit(pageSize);
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
+        query.get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
@@ -198,45 +205,43 @@ public class ComicRemoteDataSource {
                             result.add(comic);
                         }
                     }
-                    callback.onComplete(result);
+
+                    DocumentSnapshot newLastVisible = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLastVisible);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
-    //cho list để kết hợp paging
-    public void getComicsByTagIdPaging(String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
-        // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
-        db.collection("comics")
+    //list paging(phân trang)
+    public void getComicsByTagIdPaging(String tagId, @Nullable DocumentSnapshot lastVisible, int pageSize, FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics")
                 .whereArrayContains("TagId", tagId)
-                .get()
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .limit(pageSize);
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
+        query.get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        assert comic != null;
-                        if (comic.getId() == null) {
-                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                        if (comic != null) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
                         }
-                        result.add(comic);
-                        Log.d("getComicsByTagIdPaging", "Thêm truyện: " + comic.getTitle() + " (ID: " + comic.getId() + ")");
                     }
 
-                    result.sort((a, b) -> {
-                        int r = Double.compare(b.getRating(), a.getRating());
-                        if (r != 0) return r;
-
-                        r = Long.compare(b.getViews(), a.getViews());
-                        if (r != 0) return r;
-
-                        if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
-                            return b.getUpdatedAt().compareTo(a.getUpdatedAt());
-
-                        return 0;
-                    });
-                    callback.onComplete(result);
+                    DocumentSnapshot newLast = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLast);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     //cho list để get top manga theo từng tagid
     public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
@@ -479,6 +484,11 @@ public class ComicRemoteDataSource {
 
     public interface FirebaseCallback<T> {
         void onComplete(List<T> result);
+        void onFailure(Exception e);
+    }
+
+    public interface FirebasePagingCallback<T> {
+        void onComplete(List<T> result, @Nullable DocumentSnapshot lastVisible);
         void onFailure(Exception e);
     }
 }

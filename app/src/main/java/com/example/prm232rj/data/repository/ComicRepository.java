@@ -3,6 +3,7 @@ package com.example.prm232rj.data.repository;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.prm232rj.data.dto.ChapterReadingDto;
@@ -16,6 +17,8 @@ import com.example.prm232rj.data.model.Comic;
 import com.example.prm232rj.data.model.Tag;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -24,10 +27,23 @@ import javax.inject.Singleton;
 @Singleton
 public class ComicRepository {
     private final ComicRemoteDataSource remoteDataSource;
+
+    private DocumentSnapshot lastVisible = null;
+    private DocumentSnapshot fallbackLastVisible = null;
+
     @Inject
     public ComicRepository(ComicRemoteDataSource remoteDataSource) {
         this.remoteDataSource = remoteDataSource;
     }
+
+    public void resetPaging() {
+        lastVisible = null;
+    }
+
+    public void resetFallbackPaging() {
+        fallbackLastVisible = null;
+    }
+
     public ListenerRegistration getComicBanners(Activity activity, ComicRemoteDataSource.FirebaseCallback<ComicDtoBanner> callback) {
         return remoteDataSource.getComicBanners(activity, callback);
     }
@@ -43,12 +59,40 @@ public class ComicRepository {
         remoteDataSource.getComicsByTagIds(tagIds, callback);
     }
 
-    public void getComicsFallback(ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
-        remoteDataSource.getComicsFallback(callback);
+    public void getComicsFallback(boolean isFirstPage, int pageSize, ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags> callback) {
+        if (isFirstPage) {
+            fallbackLastVisible = null;
+        }
+
+        remoteDataSource.getComicsFallback(fallbackLastVisible, pageSize, new ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot lastVisible) {
+                fallbackLastVisible = lastVisible;
+                callback.onComplete(result, lastVisible);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
     }
 
-    public void getComicsByTagIdPaging(String tagId, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
-        remoteDataSource.getComicsByTagIdPaging(tagId, callback);
+    public void getComicsByTagIdPaging(String tagId, boolean isFirstPage, int pageSize, ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags> callback) {
+        if (isFirstPage) lastVisible = null;
+
+        remoteDataSource.getComicsByTagIdPaging(tagId, lastVisible, pageSize, new ComicRemoteDataSource.FirebasePagingCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result, @Nullable DocumentSnapshot newLastVisible) {
+                lastVisible = newLastVisible;
+                callback.onComplete(result, newLastVisible);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
     }
 
     public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback)
