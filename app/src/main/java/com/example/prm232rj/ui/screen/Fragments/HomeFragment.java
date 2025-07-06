@@ -101,6 +101,10 @@ public class HomeFragment extends Fragment {
             viewModel.loadComicsTop3(getActivity());
             viewModel.loadComicsByTagForHome(getActivity(),"4");
             viewModel.loadComicsByTagForHome(getActivity(),"2");
+            viewModel.loadComicsByTagForHome(getActivity(),"10");
+            viewModel.loadComicsByTagForHome(getActivity(),"14");
+            viewModel.loadComicsByTagForHome(getActivity(),"5");
+            viewModel.loadComicsByTagForHome(getActivity(),"13");
         });
     }
 
@@ -118,6 +122,14 @@ public class HomeFragment extends Fragment {
         }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Manga Phiêu lưu"; sectionTag = "adventure";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "adventure";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
             sectionTitle = "Truyện cười"; sectionTag = "comedic";
         }});
 
@@ -126,12 +138,42 @@ public class HomeFragment extends Fragment {
         }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
-            sectionTitle = "Manga Phiêu lưu";
-            sectionTag = "adventure";
+            sectionTitle = "Xuyên không"; sectionTag = "Xuyên không";
         }});
+
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
-            sectionTag = "adventure";
+            sectionTag = "Xuyên không";
         }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện Trung"; sectionTag = "Manhua";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Manhua";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện Hàn"; sectionTag = "Manhwa";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Manhwa";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Fantasy"; sectionTag = "Fantasy";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Fantasy";
+        }});
+
+
+
+
+
+
 
         adapter = new HomeSectionAdapter(sectionList);
         binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -151,6 +193,22 @@ public class HomeFragment extends Fragment {
 
         viewModel.getComicsTop3().observe(getViewLifecycleOwner(), previews ->{
             adapter.updateComicSection("hot", new ArrayList<>(previews));
+        });
+
+        viewModel.getComicsForHome("10").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Xuyên không", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("14").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Manhua", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("5").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Fantasy", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("13").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Manhwa", new ArrayList<>(comics));
         });
     }
 

@@ -155,6 +155,39 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     });
                     break;
 
+                case "Xuyên không":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "10"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Manhua":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "14"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Fantasy":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "5"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Manhwa":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "13"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
                 default:
                     binding.btnSeeAllHot.setOnClickListener(null);
                     break;

@@ -305,6 +305,9 @@ public class ComicRemoteDataSource {
     public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
         return db.collection("comics")
                 .whereArrayContains("TagId", tagId)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
                 .limit(8)
                 .addSnapshotListener(activity, (snapshot, error) -> {
                     if (error != null) {
@@ -318,32 +321,18 @@ public class ComicRemoteDataSource {
                             ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
                             if (comic != null) {
                                 if (comic.getId() == null) {
-                                    comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                    comic.setId(doc.getId()); // Gán document ID vào đối tượng
                                 }
                                 result.add(comic);
                             }
                         }
-
-                        // ✅ Sắp xếp thủ công
-                        result.sort((a, b) -> {
-                            int r = Double.compare(b.getRating(), a.getRating());
-                            if (r != 0) return r;
-
-                            r = Long.compare(b.getViews(), a.getViews());
-                            if (r != 0) return r;
-
-                            if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
-                                return b.getUpdatedAt().compareTo(a.getUpdatedAt());
-
-                            return 0;
-                        });
-
                         callback.onComplete(result);
                     } else {
                         callback.onComplete(Collections.emptyList());
                     }
                 });
     }
+
 
 
     public void getRecentComics(int limit, FirebaseCallback<Comic> callback) {
