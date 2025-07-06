@@ -16,6 +16,9 @@ import com.example.prm232rj.databinding.ActivityHomeBinding;
 import com.example.prm232rj.ui.adapter.MainPagerAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity {
 
     private ActivityHomeBinding binding;
@@ -29,7 +32,7 @@ public class HomeActivity extends AppCompatActivity {
 
         adapter = new MainPagerAdapter(getSupportFragmentManager(), getLifecycle());
         binding.viewPager.setAdapter(adapter);
-
+        binding.viewPager.setUserInputEnabled(false);
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
             switch (position) {
                 case 0:

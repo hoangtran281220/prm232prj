@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Màu nền của trạng thái, có thể thay bằng màu bạn muốn -->
+    <solid android:color="#FFEB3B" /> <!-- Vàng nhạt -->
+
+    <!-- Bo góc -->
+    <corners android:radius="6dp" />
+
+    <!-- Viền mỏng -->
+    <stroke
+        android:width="1dp"
+        android:color="#FBC02D" /> <!-- Màu viền vàng đậm -->
+</shape>

@@ -1,0 +1,56 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="item"
+            type="com.example.prm232rj.data.interfaces.IComicPreview" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- Ảnh bìa -->
+        <ImageView
+            android:id="@+id/ivComicCover"
+            android:layout_width="120dp"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            app:imageUrl="@{item.coverImage}" />
+
+        <!-- Tiêu đề -->
+        <TextView
+            android:id="@+id/tvComicTitle"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="@{item.title}"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:textSize="14sp"
+            android:paddingTop="4dp" />
+
+        <!-- Trạng thái -->
+        <TextView
+            android:id="@+id/tvComicStatus"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text='@{"Trạng thái: " + item.status}'
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="#777777" />
+
+        <!-- Rating -->
+        <TextView
+            android:id="@+id/tvComicRating"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text='@{"Đánh giá: " + String.valueOf(item.rating)}'
+            android:textSize="12sp"
+            android:textColor="#777777" />
+    </LinearLayout>
+</layout>
