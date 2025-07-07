@@ -6,10 +6,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.prm232rj.R;
@@ -33,6 +36,9 @@ public class RegisterFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private AuthViewModel authViewModel;
+
+    private boolean isPasswordVisible = false;
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -82,6 +88,17 @@ public class RegisterFragment extends Fragment {
             transaction.commit();
         });
 
+        binding.edtPassword.setOnTouchListener((v, event) -> {
+            final int DRAWABLE_END = 2; // vị trí drawableEnd
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getRawX() >= (binding.edtPassword.getRight() - binding.edtPassword.getCompoundDrawables()[DRAWABLE_END].getBounds().width())) {
+                    togglePasswordVisibility(binding.edtPassword);
+                    return true;
+                }
+            }
+            return false;
+        });
+
         binding.btnLogin.setOnClickListener(v -> {
             String username = binding.edtUsername.getText().toString().trim();
             String password = binding.edtPassword.getText().toString().trim();
@@ -117,6 +134,18 @@ public class RegisterFragment extends Fragment {
 
 
         return binding.getRoot();
+    }
+
+    private void togglePasswordVisibility(EditText editText) {
+        if (isPasswordVisible) {
+            editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.password_icon_24, 0);
+        } else {
+            editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.password_icon_24, 0);
+        }
+        isPasswordVisible = !isPasswordVisible;
+        editText.setSelection(editText.getText().length()); // giữ vị trí con trỏ
     }
 
     @Override
