@@ -19,10 +19,11 @@ public class AuthService {
         this.auth = FirebaseAuth.getInstance();
         this.db = FirebaseFirestore.getInstance();
     }
-
+    //register người dùng với username, password
     public void registerWithUsernameOnly(String username, String password, RegisterCallback callback) {
-        String fakeEmail = username + "@fakeapp.com";
+        String fakeEmail = username + "@fakeapp.com"; //email ảo để lưu trên firebase auth
 
+        //tạo email ảo
         auth.createUserWithEmailAndPassword(fakeEmail, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -31,7 +32,7 @@ public class AuthService {
                             callback.onFailure("Không lấy được thông tin người dùng");
                             return;
                         }
-
+                        //lấy uid từ auth
                         String uid = firebaseUser.getUid();
 
                         Map<String, Object> userMap = new HashMap<>();
@@ -41,7 +42,7 @@ public class AuthService {
                         userMap.put("UpdateAt", System.currentTimeMillis());
                         userMap.put("isEmailLinked", false);
                         userMap.put("linkedProvider", "password");
-
+                        //tạo user trong firestore
                         db.collection("User").document(uid)
                                 .set(userMap)
                                 .addOnSuccessListener(unused -> callback.onSuccess())
@@ -58,7 +59,7 @@ public class AuthService {
 
 
 
-
+    //interface để trả về kết quả.
     public interface RegisterCallback {
         void onSuccess();
         void onFailure(String message);

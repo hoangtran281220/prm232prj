@@ -17,11 +17,7 @@
             android:name=".ui.screen.Activities.RegisterActivity"
             android:exported="true" >
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".ui.screen.Activities.ComicListActivity"
@@ -29,6 +25,12 @@
         <activity
             android:name=".ui.screen.Activities.HomeActivity"
             android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
