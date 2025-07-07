@@ -33,5 +33,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="rating_star">#FFD700</color>
+    <color name="status_color">#4CAF50</color>
+    <color name="tag_text_color">#6200EE</color>
+
+    <!-- Màu nền mặc định của chip (nhạt hơn) -->
+    <color name="chip_default_background">#E0E0E0</color> <!-- light gray -->
 
 </resources>

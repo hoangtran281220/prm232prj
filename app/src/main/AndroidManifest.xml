@@ -14,12 +14,14 @@
         android:theme="@style/Theme.Prm232rj"
         tools:targetApi="31">
         <activity
+            android:name=".ui.screen.Activities.RegisterActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.screen.Activities.ComicListActivity"
             android:exported="false" />
         <activity
             android:name=".ui.screen.Activities.HomeActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,13 +30,11 @@
         </activity>
         <activity
             android:name=".MainActivity"
-
-            android:exported="true"></activity>
-        <activity android:name=".ui.screen.Activities.ComicDetailActivity"
-            android:exported="false">
-        </activity>
+            android:exported="true" />
+        <activity
+            android:name=".ui.screen.Activities.ComicDetailActivity"
+            android:exported="false" />
         <activity android:name=".ui.screen.Activities.ChapterActivity" />
-
     </application>
 
 </manifest>
