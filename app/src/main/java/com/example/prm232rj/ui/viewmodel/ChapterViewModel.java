@@ -40,7 +40,7 @@ public class ChapterViewModel extends ViewModel {
     }
 
     public void loadChapter(String chapterId) {
-        repository.getChapterByIdForReading(comicId, chapterId, new FirebaseCallback<ChapterReadingDto>() {
+        repository.getChapterByIdForReading(comicId, chapterId, new FirebaseCallback<>() {
             @Override
             public void onComplete(List<ChapterReadingDto> result) {
                 if (!result.isEmpty()) {
@@ -56,7 +56,7 @@ public class ChapterViewModel extends ViewModel {
     }
 
     public void loadAllChapters() {
-        repository.getAllChapters(comicId, new FirebaseCallback<ChapterReadingDto>() {
+        repository.getAllChapters(comicId, new FirebaseCallback<>() {
             @Override
             public void onComplete(List<ChapterReadingDto> result) {
                 chapters.postValue(result);
