@@ -84,6 +84,11 @@ public class ComicRemoteDataSource {
                         String cover = doc.getString("CoverImage");
                         String title = doc.getString("Title");
                         String id = doc.getId();
+                        int currentChapter = 0;
+                        Number num = doc.get("CurrentChapter", Number.class);
+                        if (num != null) {
+                            currentChapter = num.intValue();
+                        }
                         Timestamp timestamp = doc.getTimestamp("UpdatedAt");
                         if (rating != null && title != null && cover != null) {
                             result.add(new ComicDtoPreview(
@@ -92,7 +97,8 @@ public class ComicRemoteDataSource {
                                     cover,
                                     status != null ? status : "",
                                     id,
-                                    timestamp
+                                    timestamp,
+                                    currentChapter
                             ));
                         }
                     }
