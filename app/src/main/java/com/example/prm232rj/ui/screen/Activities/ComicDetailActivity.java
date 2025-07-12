@@ -9,9 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.prm232rj.data.room.ReadHistoryEntity;
 import com.example.prm232rj.databinding.ActivityComicDetailBinding;
 import com.example.prm232rj.ui.adapter.ChapterAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicDetailViewModel;
+import com.example.prm232rj.ui.viewmodel.ReadHistoryViewModel;
 
 import java.util.ArrayList;
 
@@ -24,6 +26,7 @@ public class ComicDetailActivity extends AppCompatActivity {
     private String comicId;
     private ChapterAdapter chapterAdapter;
 
+    private ReadHistoryViewModel historyViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +35,7 @@ public class ComicDetailActivity extends AppCompatActivity {
 
         // Khởi tạo ViewModel
         viewModel = new ViewModelProvider(this).get(ComicDetailViewModel.class);
-
+        historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
         // Lấy comicId từ Intent
         comicId = getIntent().getStringExtra("COMIC_ID");
 
@@ -52,6 +55,14 @@ public class ComicDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(ComicDetailActivity.this, ChapterActivity.class);
             intent.putExtra("COMIC_ID", comicId);
             intent.putExtra("CHAPTER_ID", chapter.getId());
+            ReadHistoryEntity entity = new ReadHistoryEntity();
+            entity.comicId = comicId;
+            entity.comicTitle = binding.getComic().getTitle();
+            entity.comicCoverUrl = binding.getComic().getCoverImage();
+            entity.chapterReading = chapter.getChapterNumber();
+            entity.lastReadAt = System.currentTimeMillis();
+            entity.chapterId = chapter.getId();
+            historyViewModel.saveHistory(entity);
             startActivity(intent);
         });
         binding.recyclerChapters.setAdapter(chapterAdapter); // ← Gán adapter ở đây
