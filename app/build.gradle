@@ -37,11 +37,20 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.firebase:firebase-firestore'
+    implementation libs.google.firebase.firestore
     implementation platform('com.google.firebase:firebase-bom:33.15.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation "com.google.dagger:hilt-android:2.48"
+    implementation libs.firebase.auth.v2230
+    implementation libs.firebase.firestore.v24103
+    implementation libs.com.google.firebase.firebase.auth
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation libs.credentials
+    implementation libs.credentials.play.services.auth
+    implementation libs.googleid
     annotationProcessor 'com.google.dagger:hilt-compiler:2.48'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation(libs.google.firebase.auth)
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
