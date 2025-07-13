@@ -141,54 +141,6 @@ public class ComicRemoteDataSource {
                 });
     }
 
-
-    //cho filter
-    public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
-        if (tagIds == null || tagIds.isEmpty()) {
-            // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
-            callback.onFailure(new IllegalArgumentException("tagIds không được null hoặc rỗng"));
-            return;
-        }
-
-        // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
-        if (tagIds.size() > 10) {
-            callback.onFailure(new IllegalArgumentException("Không được truyền quá 10 tagId"));
-            return;
-        }
-        db.collection("comics")
-                .whereArrayContainsAny("TagId", tagIds)
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    List<ComicDtoWithTags> result = new ArrayList<>();
-                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        assert comic != null;
-                        if (comic.getId() == null) {
-                            comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
-                            result.add(comic);
-                        } else {
-                            result.add(comic);
-                        }
-
-                    }
-
-                    result.sort((a, b) -> {
-                        int r = Double.compare(b.getRating(), a.getRating());
-                        if (r != 0) return r;
-
-                        r = Long.compare(b.getViews(), a.getViews());
-                        if (r != 0) return r;
-
-                        if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
-                            return b.getUpdatedAt().compareTo(a.getUpdatedAt());
-
-                        return 0;
-                    });
-                    callback.onComplete(result);
-                })
-                .addOnFailureListener(callback::onFailure);
-    }
-
     //list truyện hot
     public void getComicsFallback(@Nullable DocumentSnapshot lastVisible, int pageSize, FirebasePagingCallback<ComicDtoWithTags> callback) {
         Query query = db.collection("comics")

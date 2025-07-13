@@ -74,12 +74,6 @@ public class ComicRepository {
         remoteDataSource.getComicPreviews(callback);
     }
 
-    public void getComicsByTagIds(List<String> tagIds, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
-        Log.d("mytagt","repo");
-
-        remoteDataSource.getComicsByTagIds(tagIds, callback);
-    }
-
     public void getComicsFallback(boolean isFirstPage, int pageSize, ComicRemoteDataSource.FirebasePagingCallback<ComicDtoWithTags> callback) {
         if (isFirstPage) {
             fallbackLastVisible = null;
