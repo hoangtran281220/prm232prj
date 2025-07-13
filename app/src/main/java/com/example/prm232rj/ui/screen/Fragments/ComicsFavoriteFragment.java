@@ -1,5 +1,8 @@
 package com.example.prm232rj.ui.screen.Fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -9,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.prm232rj.R;
+import com.example.prm232rj.databinding.FragmentComicsFavoriteBinding;
+import com.example.prm232rj.ui.screen.Activities.LoginActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,7 +26,7 @@ public class ComicsFavoriteFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
+    private FragmentComicsFavoriteBinding binding;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -61,6 +66,33 @@ public class ComicsFavoriteFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_comics_favorite, container, false);
+        binding = FragmentComicsFavoriteBinding.inflate(inflater, container, false);
+        SharedPreferences prefs = requireActivity().getSharedPreferences("USER_PREF", Context.MODE_PRIVATE);
+        String uid = prefs.getString("uid", null);
+
+        if (uid == null) {
+            // Chưa đăng nhập
+            binding.layoutRequireLogin.setVisibility(View.VISIBLE);
+            binding.recyclerFollowed.setVisibility(View.GONE);
+
+            binding.btnLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(requireActivity(), LoginActivity.class);
+                startActivity(intent);
+            });
+        } else {
+            // Đã đăng nhập
+            binding.layoutRequireLogin.setVisibility(View.GONE);
+            binding.recyclerFollowed.setVisibility(View.VISIBLE);
+
+            // TODO: load danh sách truyện theo dõi
+        }
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

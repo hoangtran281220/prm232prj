@@ -1,10 +1,12 @@
 package com.example.prm232rj.ui.screen.Activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -133,6 +135,17 @@ public class ComicDetailActivity extends AppCompatActivity {
         // Có thể thêm các sự kiện UI khác như:
         // - Button đọc truyện
         // - Button yêu thích
+        binding.btnFavorite.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+            String uid = prefs.getString("uid", null);
+
+            if (uid == null) {
+                showLoginRequiredDialog(); // ← Nếu chưa đăng nhập
+            } else {
+                // TODO: Xử lý thêm/trừ truyện vào danh sách follow
+                Toast.makeText(this, "Đã thêm vào danh sách theo dõi!", Toast.LENGTH_SHORT).show();
+            }
+        });
         // - Swipe to refresh
         // - etc.
     }
@@ -148,4 +161,12 @@ public class ComicDetailActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;
     }
+    private void showLoginRequiredDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Tính năng này yêu cầu đăng nhập.")
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
 }

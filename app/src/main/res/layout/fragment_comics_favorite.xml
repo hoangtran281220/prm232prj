@@ -1,14 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.screen.Fragments.ComicsFavoriteFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
 
-</FrameLayout>
+        <!-- Layout yêu cầu đăng nhập -->
+        <LinearLayout
+            android:id="@+id/layoutRequireLogin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/tvRequireLogin"
+                android:text="Bạn cần đăng nhập để thực hiện tính năng này"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="16dp"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"/>
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:text="Đăng nhập"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- RecyclerView danh sách truyện theo dõi -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerFollowed"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:padding="16dp" />
+    </FrameLayout>
+</layout>

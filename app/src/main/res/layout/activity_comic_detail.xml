@@ -83,7 +83,7 @@
                             android:layout_height="16dp"
                             android:layout_marginEnd="4dp"
                             android:src="@android:drawable/btn_star_big_on"
-                            android:tint="@android:color/holo_orange_light" />
+                            app:tint="@android:color/holo_orange_light" />
 
                         <TextView
                             android:id="@+id/textRating"

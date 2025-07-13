@@ -10,9 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.prm232rj.R;
 import com.example.prm232rj.data.repository.ComicRepository;
+import com.example.prm232rj.data.room.ReadHistoryEntity;
 import com.example.prm232rj.ui.adapter.ImageForChapterAdapter;
 import com.example.prm232rj.ui.viewmodel.ChapterViewModel;
 import com.example.prm232rj.data.dto.ChapterReadingDto;
+import com.example.prm232rj.ui.viewmodel.ReadHistoryViewModel;
+
 import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -23,7 +26,7 @@ public class ChapterActivity extends AppCompatActivity {
     private TextView chapterTitle;
     private Button prevButton;
     private Button nextButton;
-
+    private ReadHistoryViewModel historyViewModel;
     @Inject
     ComicRepository repository;
 
@@ -43,6 +46,7 @@ public class ChapterActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         imageAdapter = new ImageForChapterAdapter();
         recyclerView.setAdapter(imageAdapter);
+        historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
 
         viewModel = new ViewModelProvider(this).get(ChapterViewModel.class);
         viewModel.init(comicId, chapterId);
@@ -51,6 +55,14 @@ public class ChapterActivity extends AppCompatActivity {
             if (chapter != null) {
                 chapterTitle.setText(chapter.getChapterTitle());
                 imageAdapter.setImageUrls(chapter.getContentImages());
+
+                ReadHistoryEntity entity = new ReadHistoryEntity();
+                entity.comicId = viewModel.getComicId();
+                entity.chapterReading = chapter.getChapterNumber();
+                entity.lastReadAt = System.currentTimeMillis();
+                entity.chapterId = chapter.getChapterId();
+
+                historyViewModel.saveHistory(entity);
             }
         });
 

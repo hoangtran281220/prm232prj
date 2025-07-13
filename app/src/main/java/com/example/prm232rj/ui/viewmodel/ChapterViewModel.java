@@ -20,6 +20,10 @@ public class ChapterViewModel extends ViewModel {
     private final MutableLiveData<List<ChapterReadingDto>> chapters = new MutableLiveData<>();
     private String comicId;
 
+    public String getComicId() {
+        return comicId;
+    }
+
     @Inject
     public ChapterViewModel(ComicRepository repository) {
         this.repository = repository;
