@@ -67,7 +67,7 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder instanceof BannerViewHolder) {
             ((BannerViewHolder) holder).bind(item.banners);
         } else if (holder instanceof SectionHeaderViewHolder) {
-            ((SectionHeaderViewHolder) holder).bind(item.sectionTitle);
+            ((SectionHeaderViewHolder) holder).bind(item.sectionTitle, item.sectionTag);
         } else if (holder instanceof ComicListVerticalViewHolder) {
             ((ComicListVerticalViewHolder) holder).bind(item.comics);
         } else if (holder instanceof ComicListHorizontalViewHolder) {
@@ -98,12 +98,10 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     static class BannerViewHolder extends RecyclerView.ViewHolder {
-        private final ItemComicsBannerBinding binding;
         private final ComicBannerPagerAdapter adapter = new ComicBannerPagerAdapter();
 
         public BannerViewHolder(ItemComicsBannerBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
             binding.bannerViewPager.setAdapter(adapter);
             binding.bannerDots.setViewPager2(binding.bannerViewPager);
             binding.bannerViewPager.getChildAt(0).setOnTouchListener((v, event) -> {
@@ -126,38 +124,83 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             this.binding = binding;
         }
 
-        void bind(String titleText) {
-            binding.tvSectionTitle.setText(titleText);
+        void bind(String sectionTitle, String sectionTag) {
+            binding.tvSectionTitle.setText(sectionTitle);
 
-            // Tuỳ chỉnh logic theo title (hoặc dùng sectionTag nếu muốn chính xác hơn)
-            if (titleText.equals("Hành động")) {
-                binding.btnSeeAllHot.setOnClickListener(v -> {
-                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
-                    intent.putExtra("TAG_ID", "4"); // Gắn tag phù hợp
-                    intent.putExtra("TAG_NAME", "Hành Động");
-                    binding.getRoot().getContext().startActivity(intent);
-                });
-            } else if(titleText.equals("Truyện Hot")){
-                // Ẩn hoặc disable nếu không cần xử lý
-                binding.btnSeeAllHot.setOnClickListener(v->{
-                    Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
-                    intent.putExtra("TAG_NAME", "Truyện hot");
-                    binding.getRoot().getContext().startActivity(intent);
-                });
+            switch (sectionTag) {
+                case "comedic":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "4"); // ID tag cho "Truyện cười"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
 
-            }else{
-                binding.btnSeeAllHot.setOnClickListener(null);
+                case "hot":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        intent.putExtra("TAG_ID", "");
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
+                case "adventure":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "2"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
+                case "Xuyên không":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "10"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Manhua":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "14"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Fantasy":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "5"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+                case "Manhwa":
+                    binding.btnSeeAllHot.setOnClickListener(v -> {
+                        Intent intent = new Intent(binding.getRoot().getContext(), ComicListActivity.class);
+                        intent.putExtra("TAG_ID", "13"); // ID tag cho "Manga Phiêu lưu"
+                        intent.putExtra("TAG_NAME", sectionTitle);
+                        binding.getRoot().getContext().startActivity(intent);
+                    });
+                    break;
+
+                default:
+                    binding.btnSeeAllHot.setOnClickListener(null);
+                    break;
             }
         }
+
     }
 
     static class ComicListHorizontalViewHolder extends RecyclerView.ViewHolder {
         private final ComicPreviewAdapter adapter = new ComicPreviewAdapter(new java.util.ArrayList<>());
-        private final ItemComicListHorizontalBinding binding;
 
         public ComicListHorizontalViewHolder(ItemComicListHorizontalBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
             binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.recyclerView.setAdapter(adapter);
         }
@@ -168,14 +211,16 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     static class ComicListVerticalViewHolder extends RecyclerView.ViewHolder {
-        private final TopComicAdapter adapter = new TopComicAdapter(new java.util.ArrayList<>());
-        private final ItemComicListVerticalBinding binding;
+        private final TopComicAdapter adapter = new TopComicAdapter(3);
 
         public ComicListVerticalViewHolder(ItemComicListVerticalBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
-            binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext(), LinearLayoutManager.VERTICAL, false));
-            binding.recyclerView.setAdapter(adapter);
+            binding.topPager.setAdapter(adapter);
+            binding.dotsIndicator.setViewPager2(binding.topPager);
+
+            // Tuỳ chọn nếu muốn snap từng page
+            binding.topPager.setOffscreenPageLimit(1);
+            binding.topPager.setSaveEnabled(false);
         }
 
         void bind(List<IComicPreview> comics) {

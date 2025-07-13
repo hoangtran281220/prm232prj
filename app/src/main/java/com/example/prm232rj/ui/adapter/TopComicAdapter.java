@@ -8,53 +8,73 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.ItemComicTopBinding;
+import com.example.prm232rj.databinding.ItemTopComicPageBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class TopComicAdapter extends RecyclerView.Adapter<TopComicAdapter.TopComicViewHolder> {
+public class TopComicAdapter extends RecyclerView.Adapter<TopComicAdapter.PageViewHolder> {
+    private final List<List<IComicPreview>> pages = new ArrayList<>();
+    private int itemsPerPage;
 
-    private List<IComicPreview> comics;
-
-    public TopComicAdapter(List<IComicPreview> comics) {
-        this.comics = comics;
+    public TopComicAdapter(int itemsPerPage) {
+        this.itemsPerPage = itemsPerPage;
     }
 
-    public void setData(List<IComicPreview> newData) {
-        this.comics = newData;
+    public void setData(List<IComicPreview> data) {
+        pages.clear();
+        if (data != null) {
+            for (int i = 0; i < data.size(); i += itemsPerPage) {
+                int end = Math.min(i + itemsPerPage, data.size());
+                pages.add(data.subList(i, end));
+            }
+        }
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public TopComicViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        ItemComicTopBinding binding = ItemComicTopBinding.inflate(inflater, parent, false);
-        return new TopComicViewHolder(binding);
+        ItemTopComicPageBinding binding = ItemTopComicPageBinding.inflate(inflater, parent, false);
+        return new PageViewHolder(binding, itemsPerPage);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TopComicViewHolder holder, int position) {
-        IComicPreview item = comics.get(position);
-        holder.bind(item, position);
+    public void onBindViewHolder(@NonNull PageViewHolder holder, int position) {
+        holder.bind(pages.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return comics != null ? comics.size() : 0;
+        return pages.size();
     }
 
-    static class TopComicViewHolder extends RecyclerView.ViewHolder {
-        private final ItemComicTopBinding binding;
+    static class PageViewHolder extends RecyclerView.ViewHolder {
+        private final ItemTopComicPageBinding binding;
+        private final int itemsPerPage;
 
-        public TopComicViewHolder(ItemComicTopBinding binding) {
+        public PageViewHolder(ItemTopComicPageBinding binding, int itemsPerPage) {
             super(binding.getRoot());
             this.binding = binding;
+            this.itemsPerPage = itemsPerPage;
         }
 
-        public void bind(IComicPreview item, int index) {
-            binding.setItem(item);
-            binding.setIndex(index);
-            binding.executePendingBindings();
+        public void bind(List<IComicPreview> pageData) {
+            LayoutInflater inflater = LayoutInflater.from(binding.getRoot().getContext());
+            binding.linearContainer.removeAllViews();
+
+            for (int i = 0; i < pageData.size(); i++) {
+                IComicPreview item = pageData.get(i);
+                int index = getBindingAdapterPosition() * itemsPerPage + i;
+
+                ItemComicTopBinding itemBinding = ItemComicTopBinding.inflate(inflater, binding.linearContainer, false);
+                itemBinding.setItem(item);
+                itemBinding.setIndex(index);
+                itemBinding.executePendingBindings();
+
+                binding.linearContainer.addView(itemBinding.getRoot());
+            }
         }
     }
 }

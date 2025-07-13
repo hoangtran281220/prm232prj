@@ -20,12 +20,24 @@
 <!--            android:theme="@style/Theme.appLogin"-->
 <!--            android:exported="true" />-->
         <activity
+
             android:name=".ui.screen.Activities.ComicListActivity"
             android:exported="false" />
         <activity
             android:name=".ui.screen.Activities.LoginActivity"
             android:theme="@style/Theme.appLogin"
             android:exported="true">
+<activity
+            android:name=".ui.screen.Activities.RegisterActivity"
+            android:exported="true" >
+
+
+        </activity>
+        <activity
+            android:name=".ui.screen.Activities.HomeActivity"
+            android:exported="true">
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

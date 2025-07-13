@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapter.PreviewViewHolder> {
 
-    private List<IComicPreview> previewList = new ArrayList<>();
+    private List<IComicPreview> previewList;
 
     public ComicPreviewAdapter(List<IComicPreview> previewList) {
         this.previewList = previewList;
@@ -57,7 +57,7 @@ public class ComicPreviewAdapter extends RecyclerView.Adapter<ComicPreviewAdapte
 
     @Override
     public int getItemCount() {
-        Log.d("mytag","size: " + previewList.size());
+        Log.d("paging","size: "+previewList.size());
         return previewList.size();
     }
 

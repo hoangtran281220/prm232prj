@@ -38,4 +38,8 @@
     <color name="status_color">#4CAF50</color>
     <color name="tag_text_color">#6200EE</color>
 
+
+    <!-- Màu nền mặc định của chip (nhạt hơn) -->
+    <color name="chip_default_background">#E0E0E0</color> <!-- light gray -->
+
 </resources>

@@ -32,7 +32,7 @@ public class HomeActivity extends AppCompatActivity {
 
         adapter = new MainPagerAdapter(getSupportFragmentManager(), getLifecycle());
         binding.viewPager.setAdapter(adapter);
-
+        binding.viewPager.setUserInputEnabled(false);
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
             switch (position) {
                 case 0:

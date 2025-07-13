@@ -51,6 +51,8 @@ dependencies {
     annotationProcessor 'com.google.dagger:hilt-compiler:2.48'
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
     implementation(libs.google.firebase.auth)
+    annotationProcessor 'com.google.dagger:hilt-compiler:2.48'
+
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -65,4 +67,5 @@ dependencies {
     implementation 'com.tbuonomo:dotsindicator:4.3'
     implementation("com.cloudinary:cloudinary-android:3.0.2")
     implementation ('com.squareup.picasso:picasso:2.71828')
+
 }

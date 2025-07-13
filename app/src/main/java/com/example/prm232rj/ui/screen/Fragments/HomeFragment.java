@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.FragmentHomeBinding;
 import com.example.prm232rj.ui.adapter.section.HomeSectionAdapter;
 import com.example.prm232rj.ui.adapter.section.HomeSectionItem;
@@ -19,6 +20,7 @@ import com.example.prm232rj.ui.adapter.section.SectionViewType;
 import com.example.prm232rj.ui.viewmodel.ComicViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -82,6 +84,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
+
+
         return binding.getRoot();
     }
 
@@ -91,25 +95,85 @@ public class HomeFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(ComicViewModel.class);
         setupRecycler();
+
+        view.post(() -> {
+            viewModel.loadBanners(requireActivity());
+            viewModel.loadComicsTop3(getActivity());
+            viewModel.loadComicsByTagForHome(getActivity(),"4");
+            viewModel.loadComicsByTagForHome(getActivity(),"2");
+            viewModel.loadComicsByTagForHome(getActivity(),"10");
+            viewModel.loadComicsByTagForHome(getActivity(),"14");
+            viewModel.loadComicsByTagForHome(getActivity(),"5");
+            viewModel.loadComicsByTagForHome(getActivity(),"13");
+        });
     }
 
     private void setupRecycler() {
         List<HomeSectionItem> sectionList = new ArrayList<>();
 
         sectionList.add(new HomeSectionItem(SectionViewType.BANNER));
+
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
             sectionTitle = "Truyện Hot"; sectionTag = "hot";
         }});
+
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
             sectionTag = "hot";
         }});
 
         sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
-            sectionTitle = "Hành động"; sectionTag = "action";
+            sectionTitle = "Manga Phiêu lưu"; sectionTag = "adventure";
         }});
+
         sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
-            sectionTag = "action";
+            sectionTag = "adventure";
         }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện cười"; sectionTag = "comedic";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "comedic";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Xuyên không"; sectionTag = "Xuyên không";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Xuyên không";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện Trung"; sectionTag = "Manhua";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Manhua";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Truyện Hàn"; sectionTag = "Manhwa";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Manhwa";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.SECTION_HEADER) {{
+            sectionTitle = "Fantasy"; sectionTag = "Fantasy";
+        }});
+
+        sectionList.add(new HomeSectionItem(SectionViewType.COMIC_LIST) {{
+            sectionTag = "Fantasy";
+        }});
+
+
+
+
+
+
 
         adapter = new HomeSectionAdapter(sectionList);
         binding.homeRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -119,20 +183,33 @@ public class HomeFragment extends Fragment {
                 adapter.updateBannerSection(banners)
         );
 
-        viewModel.getPreviews().observe(getViewLifecycleOwner(), previews -> {
-//            adapter.updateComicSection("hot", new ArrayList<>(previews));
-            adapter.updateComicSection("action", new ArrayList<>(previews));
-            adapter.updateComicSection("manhwa", new ArrayList<>(previews));
-            adapter.updateComicSection("romcom", new ArrayList<>(previews));
+        viewModel.getComicsForHome("4").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("comedic", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("2").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("adventure", new ArrayList<>(comics));
         });
 
         viewModel.getComicsTop3().observe(getViewLifecycleOwner(), previews ->{
             adapter.updateComicSection("hot", new ArrayList<>(previews));
         });
-        viewModel.loadComicsTop3();
 
-        viewModel.loadBanners();
-        viewModel.loadPreviews();
+        viewModel.getComicsForHome("10").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Xuyên không", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("14").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Manhua", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("5").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Fantasy", new ArrayList<>(comics));
+        });
+
+        viewModel.getComicsForHome("13").observe(getViewLifecycleOwner(), comics -> {
+            adapter.updateComicSection("Manhwa", new ArrayList<>(comics));
+        });
     }
 
 }
