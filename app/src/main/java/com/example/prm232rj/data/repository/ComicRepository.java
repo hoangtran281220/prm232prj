@@ -184,4 +184,18 @@ public class ComicRepository {
         remoteDataSource.getAllChapters(comicId, callback);
     }
 
+    public ListenerRegistration observeFollowedComics(String userId, ComicRemoteDataSource.RealtimeComicCallback callback) {
+        return remoteDataSource.observeFollowedComicsRealtime(userId, new ComicRemoteDataSource.FirebaseCallback<>() {
+            @Override
+            public void onComplete(List<ComicDtoPreview> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
 }

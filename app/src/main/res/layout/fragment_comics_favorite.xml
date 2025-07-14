@@ -29,6 +29,15 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:text="Bạn chưa theo dõi truyện nào"
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black" />
+
         <!-- RecyclerView danh sách truyện theo dõi -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerFollowed"

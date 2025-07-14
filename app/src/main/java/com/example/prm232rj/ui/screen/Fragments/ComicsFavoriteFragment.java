@@ -6,20 +6,33 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentComicsFavoriteBinding;
+import com.example.prm232rj.ui.adapter.ComicPreviewAdapter;
+import com.example.prm232rj.ui.screen.Activities.ComicDetailActivity;
 import com.example.prm232rj.ui.screen.Activities.LoginActivity;
+import com.example.prm232rj.ui.viewmodel.FollowedComicsViewModel;
+
+import java.util.ArrayList;
+
+import dagger.hilt.android.AndroidEntryPoint;
+import dagger.hilt.android.HiltAndroidApp;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link ComicsFavoriteFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+@AndroidEntryPoint
 public class ComicsFavoriteFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
@@ -27,6 +40,8 @@ public class ComicsFavoriteFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private FragmentComicsFavoriteBinding binding;
+    private FollowedComicsViewModel followViewModel;
+    private ComicPreviewAdapter adapter;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -81,8 +96,30 @@ public class ComicsFavoriteFragment extends Fragment {
             });
         } else {
             // Đã đăng nhập
-            binding.layoutRequireLogin.setVisibility(View.GONE);
-            binding.recyclerFollowed.setVisibility(View.VISIBLE);
+            followViewModel = new ViewModelProvider(this).get(FollowedComicsViewModel.class);
+
+            // Init adapter và layout
+            adapter = new ComicPreviewAdapter(new ArrayList<>());
+
+            binding.recyclerFollowed.setLayoutManager(new GridLayoutManager(requireContext(), 3));
+            binding.recyclerFollowed.setAdapter(adapter);
+
+            // Observe realtime danh sách follow
+            followViewModel.observeFollowedComics(uid);
+
+            // Lắng nghe dữ liệu
+            followViewModel.getFollowedComics().observe(getViewLifecycleOwner(), comics -> {
+                if (comics != null && !comics.isEmpty()) {
+                    adapter.setData(comics);
+                    binding.tvEmpty.setVisibility(View.GONE);
+                    binding.recyclerFollowed.setVisibility(View.VISIBLE);
+                } else {
+                    Log.d("mytagt","kco");
+                    adapter.setData(new ArrayList<>());
+                    binding.tvEmpty.setVisibility(View.VISIBLE); // Hiển thị "Không có truyện theo dõi"
+                }
+            });
+
 
             // TODO: load danh sách truyện theo dõi
         }

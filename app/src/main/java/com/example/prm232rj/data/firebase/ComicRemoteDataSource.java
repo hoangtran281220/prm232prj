@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.lifecycle.LifecycleOwner;
 
 import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
@@ -26,8 +25,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -482,8 +481,79 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getComicsByIds(List<String> comicIds, FirebaseCallback<ComicDtoPreview> callback) {
+        if (comicIds == null || comicIds.isEmpty()) {
+            callback.onComplete(new ArrayList<>());
+            return;
+        }
 
+        List<ComicDtoPreview> allResults = new ArrayList<>();
+        List<List<String>> batches = new ArrayList<>();
+        for (int i = 0; i < comicIds.size(); i += 10) {
+            int end = Math.min(i + 10, comicIds.size());
+            batches.add(comicIds.subList(i, end));
+        }
 
+        int totalBatches = batches.size();
+        int[] completed = {0};
+        boolean[] hasFailed = {false};
+
+        for (List<String> batch : batches) {
+            db.collection("comics")
+                    .whereIn(FieldPath.documentId(), batch)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoPreview comic = doc.toObject(ComicDtoPreview.class);
+                            if (comic != null) {
+                                comic.setId(doc.getId());
+                                allResults.add(comic);
+                            }
+                        }
+                        completed[0]++;
+                        if (completed[0] == totalBatches && !hasFailed[0]) {
+                            allResults.sort(Comparator.comparingInt(c -> comicIds.indexOf(c.getId())));
+                            callback.onComplete(allResults);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (!hasFailed[0]) {
+                            hasFailed[0] = true;
+                            callback.onFailure(e);
+                        }
+                    });
+        }
+    }
+
+    public ListenerRegistration observeFollowedComicsRealtime(String userId, FirebaseCallback<ComicDtoPreview> callback) {
+        return db.collection("User")
+                .document(userId)
+                .collection("followed_comics")
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    List<String> comicIds = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        comicIds.add(doc.getId()); // dùng ID document là comicId
+                    }
+
+                    // Truy xuất chi tiết comic từ danh sách ID
+                    getComicsByIds(comicIds, new ComicRemoteDataSource.FirebaseCallback<>() {
+                        @Override
+                        public void onComplete(List<ComicDtoPreview> result) {
+                            callback.onComplete(result);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            callback.onFailure(e);
+                        }
+                    });
+                });
+    }
 
 
 
@@ -496,6 +566,11 @@ public class ComicRemoteDataSource {
         void onComplete(List<T> result, @Nullable DocumentSnapshot lastVisible);
         void onFailure(Exception e);
     }
+    public interface RealtimeComicCallback {
+        void onSuccess(List<ComicDtoPreview> comics);
+        void onFailure(Exception e);
+    }
+
 }
 
 

@@ -15,6 +15,7 @@ import com.example.prm232rj.data.room.ReadHistoryEntity;
 import com.example.prm232rj.databinding.ActivityComicDetailBinding;
 import com.example.prm232rj.ui.adapter.ChapterAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicDetailViewModel;
+import com.example.prm232rj.ui.viewmodel.FollowedComicsViewModel;
 import com.example.prm232rj.ui.viewmodel.ReadHistoryViewModel;
 
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ public class ComicDetailActivity extends AppCompatActivity {
     private ComicDetailViewModel viewModel;
     private String comicId;
     private ChapterAdapter chapterAdapter;
+    private FollowedComicsViewModel followViewModel;
+    private boolean isFollowed = false;
 
     private ReadHistoryViewModel historyViewModel;
     @Override
@@ -46,7 +49,14 @@ public class ComicDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
+        followViewModel = new ViewModelProvider(this).get(FollowedComicsViewModel.class);
 
+        // Gọi quan sát truyện đã theo dõi hay chưa
+        SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+        String uid = prefs.getString("uid", null);
+        if (uid != null) {
+            followViewModel.observeFollowedComics(uid);
+        }
         // Setup observers
         setupObservers();
 
@@ -75,6 +85,32 @@ public class ComicDetailActivity extends AppCompatActivity {
     }
 
     private void setupObservers() {
+        followViewModel.getFollowedComics().observe(this, followedList -> {
+            if (followedList != null && !followedList.isEmpty()) {
+                boolean isFollowed = false;
+                for (var comic : followedList) {
+                    if (comic.getId().equals(comicId)) {
+                        isFollowed = true;
+                        break;
+                    }
+                }
+                updateFavoriteUI(isFollowed);
+            } else {
+                updateFavoriteUI(false);
+            }
+        });
+
+        followViewModel.getFollowSuccess().observe(this, success -> {
+            if (success != null && success) {
+                Toast.makeText(this, "Đã thêm vào danh sách theo dõi!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        followViewModel.getUnfollowSuccess().observe(this, success -> {
+            if (success != null && success) {
+                Toast.makeText(this, "Đã xoá khỏi danh sách theo dõi!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Observe comic data
         viewModel.getComic().observe(this, comic -> {
             if (comic != null) {
@@ -143,11 +179,23 @@ public class ComicDetailActivity extends AppCompatActivity {
                 showLoginRequiredDialog(); // ← Nếu chưa đăng nhập
             } else {
                 // TODO: Xử lý thêm/trừ truyện vào danh sách follow
-                Toast.makeText(this, "Đã thêm vào danh sách theo dõi!", Toast.LENGTH_SHORT).show();
-            }
+                if (isFollowed) {
+                    followViewModel.unfollowComic(uid, comicId);
+                } else {
+                    followViewModel.followComic(uid, comicId);
+                }            }
         });
         // - Swipe to refresh
         // - etc.
+    }
+
+    private void updateFavoriteUI(boolean followed) {
+        isFollowed = followed;
+        if (followed) {
+            binding.btnFavorite.setText("Đã yêu thích ❤️");
+        } else {
+            binding.btnFavorite.setText("Yêu thích");
+        }
     }
 
     @Override

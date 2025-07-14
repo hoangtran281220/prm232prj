@@ -22,4 +22,14 @@ public class AuthRepository {
     public void signInWithGoogle(String idToken, AuthService.GoogleSignInCallback callback) {
         authService.signInWithGoogle(idToken, callback);
     }
+
+    public void followComic(String userId, String comicId, AuthService.FirebaseCallbackUser<Void> callback) {
+        authService.followComic(userId, comicId, callback);
+    }
+
+    public void unfollowComic(String userId, String comicId, AuthService.FirebaseCallbackUser<Void> callback) {
+        authService.unfollowComic(userId, comicId, callback);
+    }
+
+
 }
