@@ -49,6 +49,7 @@ public class ChapterViewModel extends ViewModel {
             public void onComplete(List<ChapterReadingDto> result) {
                 if (!result.isEmpty()) {
                     currentChapter.postValue(result.get(0));
+                    repository.incrementChapterViews(chapterId);
                 }
             }
 

@@ -71,7 +71,7 @@ public class ComicDetailViewModel extends ViewModel {
                 _isLoading.setValue(false);
                 if (result != null && !result.isEmpty()) {
                     _comic.setValue(result.get(0));
-
+                    repository.incrementComicViews(comicId);
                 } else {
                     _error.setValue("Không tìm thấy dữ liệu truyện");
                 }

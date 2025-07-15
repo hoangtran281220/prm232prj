@@ -15,6 +15,7 @@ import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
 import com.example.prm232rj.data.model.Tag;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -524,7 +525,7 @@ public class ComicRemoteDataSource {
                     });
         }
     }
-
+    //danh sách follow
     public ListenerRegistration observeFollowedComicsRealtime(String userId, FirebaseCallback<ComicDtoPreview> callback) {
         return db.collection("User")
                 .document(userId)
@@ -553,6 +554,37 @@ public class ComicRemoteDataSource {
                         }
                     });
                 });
+    }
+
+    //cập nhật views
+    public void incrementComicViews(String comicId) {
+        DocumentReference comicRef = db.collection("comics").document(comicId);
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(comicRef);
+            Long currentViews = snapshot.getLong("Views");
+            if (currentViews == null) currentViews = 0L;
+            transaction.update(comicRef, "Views", currentViews + 1);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Đã cập nhật views cho comic: " + comicId);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Lỗi cập nhật views comic " + comicId + ": " + e.getMessage());
+        });
+    }
+
+    public void incrementChapterViews(String chapterId) {
+        DocumentReference chapterRef = db.collection("chapters").document(chapterId);
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(chapterRef);
+            Long currentViews = snapshot.getLong("Views");
+            if (currentViews == null) currentViews = 0L;
+            transaction.update(chapterRef, "Views", currentViews + 1);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Đã cập nhật views cho chapter: " + chapterId);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Lỗi cập nhật views chapter " + chapterId + ": " + e.getMessage());
+        });
     }
 
 

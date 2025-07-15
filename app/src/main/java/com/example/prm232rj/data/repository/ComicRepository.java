@@ -198,4 +198,12 @@ public class ComicRepository {
         });
     }
 
+    public void incrementComicViews(String comicId) {
+        remoteDataSource.incrementComicViews(comicId);
+    }
+
+    public void incrementChapterViews(String chapterId) {
+        remoteDataSource.incrementChapterViews(chapterId);
+    }
+
 }
