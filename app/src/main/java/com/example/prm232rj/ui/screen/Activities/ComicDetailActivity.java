@@ -3,7 +3,10 @@ package com.example.prm232rj.ui.screen.Activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -11,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.room.ReadHistoryEntity;
 import com.example.prm232rj.databinding.ActivityComicDetailBinding;
 import com.example.prm232rj.ui.adapter.ChapterAdapter;
@@ -185,8 +190,67 @@ public class ComicDetailActivity extends AppCompatActivity {
                     followViewModel.followComic(uid, comicId);
                 }            }
         });
+
+        //Button đánh giá
+        binding.btnRate.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+            String uid = prefs.getString("uid", null);
+
+            if (uid == null) {
+                showLoginRequiredDialog(); // ⛔ Nếu chưa đăng nhập
+            } else {
+                showRatingDialog(comicId, uid); // ✅ Hiển thị dialog đánh giá
+            }
+        });
         // - Swipe to refresh
         // - etc.
+    }
+
+    private void showRatingDialog(String comicId, String userId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Đánh giá truyện");
+
+        // Tạo RatingBar với step lẻ
+        RatingBar ratingBar = new RatingBar(this);
+        ratingBar.setNumStars(5);
+        ratingBar.setStepSize(0.1f); // ✅ Cho phép đánh giá lẻ như 3.4, 4.7
+        ratingBar.setRating(3.5f);
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setPadding(40, 30, 40, 10);
+        layout.setGravity(Gravity.CENTER);
+        layout.addView(ratingBar);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Gửi", (dialog, which) -> {
+            double rating = ratingBar.getRating();
+
+            // Gọi ViewModel/Repo để xử lý rating
+            viewModel.rateComic(comicId, userId, rating, task -> {
+                if (task.isSuccessful()) {
+                    RatingResult result = task.getResult();
+                    double newAvg = result.getAverage();
+                    long newCount = result.getCount();
+                    Toast.makeText(this, "Cảm ơn bạn! Rating mới: " + newAvg, Toast.LENGTH_SHORT).show();
+
+                    // 👉 Cập nhật lại UI nếu cần
+                    Comic comic = binding.getComic();
+                    if (comic != null) {
+                        comic.setRating(newAvg);
+                        comic.setRatingCount(newCount);
+                        binding.setComic(comic);
+                        binding.executePendingBindings();
+                    }
+
+                } else {
+                    Toast.makeText(this, "Đánh giá thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        builder.setNegativeButton("Huỷ", null);
+        builder.show();
     }
 
     private void updateFavoriteUI(boolean followed) {

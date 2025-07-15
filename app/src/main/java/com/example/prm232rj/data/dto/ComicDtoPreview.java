@@ -10,7 +10,7 @@ public class ComicDtoPreview implements IComicPreview {
         private String Status;
         private int CurrentChapter;
         private double Rating;
-
+        private long RatingCount;
         private Timestamp UpdatedAt;
 
         public ComicDtoPreview() {}
@@ -18,7 +18,7 @@ public class ComicDtoPreview implements IComicPreview {
         // ✅ Constructor tiện cho tạo object bằng tay
         public ComicDtoPreview(double rating, String title, String coverImage,
                                String status, String id, Timestamp updatedAt,
-                               int currentChapter) {
+                               int currentChapter, long ratingCount) {
                 Title = title;
                 CoverImage = coverImage;
                 Status = status;
@@ -26,6 +26,7 @@ public class ComicDtoPreview implements IComicPreview {
                 Id = id;
                 UpdatedAt = updatedAt;
                 CurrentChapter = currentChapter;
+                RatingCount = ratingCount;
         }
 
         @Override
@@ -41,7 +42,8 @@ public class ComicDtoPreview implements IComicPreview {
         public String getStatus() { return Status; }
         @Override
         public double getRating() { return Rating; }
-
+        @Override
+        public long getRatingCount(){return RatingCount;}
         @Override
         public int getCurrentChapter(){
                 return CurrentChapter;

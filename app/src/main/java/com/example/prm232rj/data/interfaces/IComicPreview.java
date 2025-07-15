@@ -7,4 +7,5 @@ public interface IComicPreview {
     String getStatus();
     double getRating();
     int getCurrentChapter();
+    long getRatingCount();
 }

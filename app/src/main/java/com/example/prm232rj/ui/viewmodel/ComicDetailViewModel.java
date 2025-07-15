@@ -10,8 +10,10 @@ import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.model.Tag;
 import com.example.prm232rj.data.repository.ComicRepository;
+import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -134,6 +136,10 @@ public class ComicDetailViewModel extends ViewModel {
             });
         }
     }
+    public void rateComic(String comicId, String userId, double rating, OnCompleteListener<RatingResult> listener) {
+        repository.rateComic(comicId, userId, rating, listener);
+    }
+
 
     // Refresh data
     public void refresh(String comicId) {

@@ -13,11 +13,14 @@ import com.example.prm232rj.data.dto.TagDto;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.model.Tag;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -27,7 +30,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -83,6 +88,7 @@ public class ComicRemoteDataSource {
                         String status = doc.getString("Status");
                         String cover = doc.getString("CoverImage");
                         String title = doc.getString("Title");
+                        long ratingCount = doc.getLong("RatingCount");
                         String id = doc.getId();
                         int currentChapter = 0;
                         Number num = doc.get("CurrentChapter", Number.class);
@@ -98,7 +104,8 @@ public class ComicRemoteDataSource {
                                     status != null ? status : "",
                                     id,
                                     timestamp,
-                                    currentChapter
+                                    currentChapter,
+                                    ratingCount
                             ));
                         }
                     }
@@ -585,6 +592,53 @@ public class ComicRemoteDataSource {
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Lỗi cập nhật views chapter " + chapterId + ": " + e.getMessage());
         });
+    }
+
+    public void rateComic(String comicId, String userId, double newRating, OnCompleteListener<RatingResult> listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference comicRef = db.collection("comics").document(comicId);
+        DocumentReference userRatingRef = comicRef.collection("userRatings").document(userId);
+
+        db.runTransaction(transaction -> {
+            // Lấy dữ liệu comic
+            DocumentSnapshot comicSnap = transaction.get(comicRef);
+            if (!comicSnap.exists()) {
+                throw new FirebaseFirestoreException("Comic not found",
+                        FirebaseFirestoreException.Code.NOT_FOUND);
+            }
+
+            // Lấy rating hiện tại của comic
+            double ratingAvg = comicSnap.contains("Rating") ? comicSnap.getDouble("Rating") : 0.0;
+            long ratingCount = comicSnap.contains("RatingCount") ? comicSnap.getLong("RatingCount") : 0;
+
+            // Lấy dữ liệu rating trước của user
+            DocumentSnapshot userRatingSnap = transaction.get(userRatingRef);
+            double updatedAvg;
+
+            if (userRatingSnap.exists()) {
+                // Re-rating
+                double oldRating = userRatingSnap.getDouble("rating");
+                updatedAvg = ((ratingAvg * ratingCount) - oldRating + newRating) / ratingCount;
+            } else {
+                // Rating lần đầu
+                updatedAvg = ((ratingAvg * ratingCount) + newRating) / (ratingCount + 1);
+                ratingCount += 1;
+            }
+
+            // Ghi user rating
+            Map<String, Object> userRating = new HashMap<>();
+            userRating.put("rating", newRating);
+            userRating.put("timestamp", FieldValue.serverTimestamp());
+            transaction.set(userRatingRef, userRating);
+
+            // Cập nhật comic
+            Map<String, Object> comicUpdate = new HashMap<>();
+            comicUpdate.put("Rating", updatedAvg);
+            comicUpdate.put("RatingCount", ratingCount);
+            transaction.update(comicRef, comicUpdate);
+
+            return new RatingResult(updatedAvg, ratingCount);
+        }).addOnCompleteListener(listener);
     }
 
 

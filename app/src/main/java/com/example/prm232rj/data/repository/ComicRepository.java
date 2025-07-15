@@ -14,7 +14,9 @@ import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.model.Tag;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -204,6 +206,10 @@ public class ComicRepository {
 
     public void incrementChapterViews(String chapterId) {
         remoteDataSource.incrementChapterViews(chapterId);
+    }
+
+    public void rateComic(String comicId, String userId, double rating, OnCompleteListener<RatingResult> listener) {
+        remoteDataSource.rateComic(comicId, userId, rating, listener);
     }
 
 }
