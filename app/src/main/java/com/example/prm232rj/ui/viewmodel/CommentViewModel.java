@@ -32,9 +32,11 @@ public class CommentViewModel extends ViewModel {
     private final MutableLiveData<Map<String, List<Reply>>> repliesMapLiveData = new MutableLiveData<>(new HashMap<>());
 
     private final Map<String, ListenerRegistration> replyListeners = new HashMap<>();
-    private DocumentSnapshot lastVisible = null;
-    private boolean isLastPage = false;
+    private ListenerRegistration commentListener;
     private String chapterId;
+
+    private final MutableLiveData<Boolean> commentAddedSuccess = new MutableLiveData<>();
+    private final MutableLiveData<String> commentErrorMessage = new MutableLiveData<>();
 
     @Inject
     public CommentViewModel(ComicRepository repository) {
@@ -56,7 +58,23 @@ public class CommentViewModel extends ViewModel {
     public LiveData<Map<String, List<Reply>>> getRepliesLiveData() {
         return repliesMapLiveData;
     }
+    public void listenToRootComments() {
+        if (commentListener != null) {
+            commentListener.remove();
+        }
 
+        repository.listenToRootComments(chapterId, new ComicRemoteDataSource.FirebaseCallback<Comment>() {
+            @Override
+            public void onComplete(List<Comment> result) {
+                commentsLiveData.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("CommentVM", "Listen failed: " + e);
+            }
+        });
+    }
     public void loadReplies(String commentId) {
         if (replyListeners.containsKey(commentId)) return;
 
@@ -79,40 +97,42 @@ public class CommentViewModel extends ViewModel {
         replyListeners.put(commentId, listener);
     }
 
-    public void loadMoreRootComments(String chapterId, int pageSize) {
-        if (isLastPage) return;
 
-        repository.getPagedRootCommentsRealtime(chapterId, lastVisible, pageSize, new ComicRemoteDataSource.FirebaseCommentPagingCallback() {
+
+    public void addComment(String userId, String userName, String avatarUrl, String content) {
+        repository.addCommentToChapter(chapterId, userId, userName, avatarUrl, content, new ComicRemoteDataSource.FirestoreCallbackComment() {
             @Override
-            public void onPage(List<Comment> newComments, @Nullable DocumentSnapshot newLastVisible) {
-                lastVisible = newLastVisible;
-
-                List<Comment> current = commentsLiveData.getValue();
-                if (current == null) current = new ArrayList<>();
-                current.addAll(newComments);
-                commentsLiveData.postValue(current);
-
-                if (newComments.isEmpty()) {
-                    isLastPage = true;
-                }
+            public void onSuccess() {
+                commentAddedSuccess.postValue(true);
             }
 
             @Override
-            public void onError(Exception e) {
-                // TODO: Xử lý lỗi nếu cần
-                Log.e("my_err",""+e);
+            public void onFailure(Exception e) {
+                commentErrorMessage.postValue(e.getMessage());
             }
         });
+    }
+
+    public LiveData<Boolean> getCommentAddedSuccess() {
+        return commentAddedSuccess;
+    }
+
+    public LiveData<String> getCommentErrorMessage() {
+        return commentErrorMessage;
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
+
         for (ListenerRegistration reg : replyListeners.values()) {
             reg.remove();
         }
-        replyListeners.clear();
-        repository.removeCommentListener(); // nếu có lắng nghe root comment
+
+        if (commentListener != null) {
+            commentListener.remove();
+            commentListener = null;
+        }
     }
 }
 

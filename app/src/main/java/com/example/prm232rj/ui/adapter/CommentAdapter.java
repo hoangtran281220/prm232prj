@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
-
     private List<Comment> commentList;
     private final Map<String, List<Reply>> repliesMap = new HashMap<>();
     private final Map<String, Boolean> expandedReplies = new HashMap<>();
@@ -30,7 +29,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public interface OnExpandRepliesListener {
         void onExpandReplies(String commentId);
     }
-
+    public void setData(List<Comment> newData) {
+        this.commentList.clear();
+        this.commentList.addAll(newData);
+        notifyDataSetChanged();
+    }
     private OnExpandRepliesListener listener;
 
     public CommentAdapter(List<Comment> commentList) {
@@ -54,6 +57,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
         return -1;
     }
+
+
 
     @NonNull
     @Override
@@ -107,6 +112,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             }
 
             // TODO: xử lý nếu đã đăng nhập, ví dụ: mở giao diện nhập phản hồi
+
         });
 
     }

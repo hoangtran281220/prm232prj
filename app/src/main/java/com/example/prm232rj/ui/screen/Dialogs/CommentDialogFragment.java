@@ -21,11 +21,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.prm232rj.data.dto.UserDto;
+import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
+import com.example.prm232rj.data.model.User;
 import com.example.prm232rj.databinding.DialogCommentsBinding;
 import com.example.prm232rj.ui.adapter.CommentAdapter;
 import com.example.prm232rj.ui.screen.Activities.LoginActivity;
 import com.example.prm232rj.ui.screen.Activities.RegisterActivity;
 import com.example.prm232rj.ui.viewmodel.CommentViewModel;
+import com.example.prm232rj.ui.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
 
@@ -38,7 +42,9 @@ public class CommentDialogFragment extends DialogFragment {
     private CommentViewModel viewModel;
     private CommentAdapter adapter;
     private String chapterId;
-
+    private UserViewModel userViewModel;
+    private String currentUserId;
+    private UserDto currentUserDTO;
     public CommentDialogFragment(String chapterId) {
         this.chapterId = chapterId;
     }
@@ -57,6 +63,7 @@ public class CommentDialogFragment extends DialogFragment {
         // ViewModel lấy qua Hilt
         viewModel = new ViewModelProvider(this).get(CommentViewModel.class);
         viewModel.setChapterId(chapterId);
+        viewModel.listenToRootComments();
 
         // Setup RecyclerView
         adapter = new CommentAdapter(new ArrayList<>());
@@ -64,14 +71,10 @@ public class CommentDialogFragment extends DialogFragment {
         binding.recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerComments.setAdapter(adapter);
 
-        // Load dữ liệu ban đầu
-        viewModel.loadMoreRootComments(chapterId, 10);
 
         // Quan sát danh sách comment
         viewModel.getCommentsLiveData().observe(getViewLifecycleOwner(), comments -> {
-            adapter = new CommentAdapter(comments);
-            adapter.setOnExpandRepliesListener(commentId -> viewModel.loadReplies(commentId));
-            binding.recyclerComments.setAdapter(adapter);
+            adapter.setData(comments); // Hoặc adapter.submitList(comments) nếu dùng ListAdapter
         });
 
         // Quan sát replies map để update mỗi comment
@@ -81,26 +84,32 @@ public class CommentDialogFragment extends DialogFragment {
             }
         });
 
-        // Scroll để load thêm comment
-        binding.recyclerComments.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (lm != null && lm.findLastVisibleItemPosition() >= adapter.getItemCount() - 1) {
-                    viewModel.loadMoreRootComments(chapterId, 10);
-                }
+        SharedPreferences prefs = requireActivity().getSharedPreferences("USER_PREF", Context.MODE_PRIVATE);
+        currentUserId = prefs.getString("uid", null);
+
+        if (currentUserId == null) {
+            showLoginHint();
+        } else {
+            userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+            userViewModel.loadUser(currentUserId);
+            showCommentInput();
+        }
+
+        //quan sát trạng thái comment
+        viewModel.getCommentAddedSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success != null && success) {
+                binding.edtCommentInput.setText("");
+                Toast.makeText(getContext(), "Đã gửi bình luận!", Toast.LENGTH_SHORT).show();
             }
         });
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences("USER_PREF", Context.MODE_PRIVATE);
-        String uid = prefs.getString("uid", null);
+        viewModel.getCommentErrorMessage().observe(getViewLifecycleOwner(), errMsg -> {
+            if (errMsg != null) {
+                Toast.makeText(getContext(), "Lỗi khi gửi bình luận: " + errMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        if (uid == null) {
-            showLoginHint();
-        } else {
-            showCommentInput();
-        }
+
 
         // Nút đóng dialog
         binding.btnClose.setOnClickListener(v -> dismiss());
@@ -154,6 +163,14 @@ public class CommentDialogFragment extends DialogFragment {
         binding.tvLoginHint.setVisibility(View.GONE);
         binding.inputLayout.setVisibility(View.VISIBLE);
 
+        userViewModel.getUserLiveData().observe(getViewLifecycleOwner(), user -> {
+            if (user == null) {
+                Toast.makeText(getContext(), "Không thể tải thông tin người dùng.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            currentUserDTO = user; // Lưu lại để dùng khi gửi comment
+        });
+
         binding.inputLayout.setEndIconOnClickListener(v -> {
             String content = binding.edtCommentInput.getText().toString().trim();
             if (content.isEmpty()) {
@@ -161,11 +178,20 @@ public class CommentDialogFragment extends DialogFragment {
                 return;
             }
 
-            // TODO: xử lý gửi bình luận vào Firestore
-            Toast.makeText(getContext(), "Đã gửi: " + content, Toast.LENGTH_SHORT).show();
-            binding.edtCommentInput.setText("");
+            if (currentUserDTO == null) {
+                Toast.makeText(getContext(), "Đang tải thông tin người dùng...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            viewModel.addComment(
+                    currentUserId,
+                    currentUserDTO.getUsername(),
+                    currentUserDTO.getAvatarUrl(),
+                    content);
         });
+
     }
+
 
     @Override
     public void onDestroyView() {

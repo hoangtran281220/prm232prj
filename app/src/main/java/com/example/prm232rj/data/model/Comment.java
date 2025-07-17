@@ -9,7 +9,6 @@ public class Comment {
     private String userId;
     private String userName;
     private String avatarUrl;
-
     private String content;
     private Timestamp createdAt;
 

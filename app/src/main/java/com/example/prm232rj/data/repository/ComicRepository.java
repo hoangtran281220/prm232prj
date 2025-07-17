@@ -14,6 +14,7 @@ import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.Comment;
 import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.model.Reply;
 import com.example.prm232rj.data.model.Tag;
@@ -30,6 +31,7 @@ import javax.inject.Singleton;
 @Singleton
 public class ComicRepository {
     private final ComicRemoteDataSource remoteDataSource;
+    private ListenerRegistration commentListener;
 
     private DocumentSnapshot lastVisible = null;
     private DocumentSnapshot fallbackLastVisible = null;
@@ -231,21 +233,15 @@ public class ComicRepository {
         );
     }
 
-    public void getPagedRootCommentsRealtime(
-            String chapterId,
-            @Nullable DocumentSnapshot lastVisible,
-            int pageSize,
-            ComicRemoteDataSource.FirebaseCommentPagingCallback callback
-    ) {
-        remoteDataSource.getPagedRootCommentsRealtime(chapterId, lastVisible, pageSize, callback);
+    public ListenerRegistration listenToRootComments(String chapterId, ComicRemoteDataSource.FirebaseCallback<Comment> callback) {
+        return remoteDataSource.listenToRootComments(chapterId, callback);
     }
 
-    public void removeCommentListener() {
-        remoteDataSource.removeCommentListener();
-    }
 
     public ListenerRegistration getRepliesRealtime(String chapterId, String commentId, ComicRemoteDataSource.FirebaseCallback<Reply> callback) {
         return remoteDataSource.getRepliesRealtime(chapterId, commentId, callback);
     }
+
+
 
 }

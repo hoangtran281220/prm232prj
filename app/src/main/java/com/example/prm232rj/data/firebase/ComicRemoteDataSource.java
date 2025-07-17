@@ -10,6 +10,7 @@ import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
 import com.example.prm232rj.data.dto.TagDto;
+import com.example.prm232rj.data.dto.UserDto;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
@@ -43,7 +44,7 @@ import javax.inject.Singleton;
 public class ComicRemoteDataSource {
     private final FirebaseFirestore db;
     private static final String TAG = "ComicRemoteDataSource";
-    private ListenerRegistration currentCommentListener;
+
 
     @Inject
     public ComicRemoteDataSource() {
@@ -667,60 +668,45 @@ public class ComicRemoteDataSource {
                 .collection("comments")
                 .add(comment)
                 .addOnSuccessListener(documentReference -> {
-                    comment.setId(documentReference.getId());
                     callback.onSuccess();
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
     //get all comments
-    public void getPagedRootCommentsRealtime(
-            String chapterId,
-            @Nullable DocumentSnapshot lastVisibleDoc,
-            int pageSize,
-            FirebaseCommentPagingCallback callback
-    ) {
-        Query baseQuery = db.collection("chapters")
+
+
+    public ListenerRegistration listenToRootComments(String chapterId, FirebaseCallback<Comment> callback) {
+        return FirebaseFirestore.getInstance()
+                .collection("chapters")
                 .document(chapterId)
                 .collection("comments")
-                .whereEqualTo("parentId", null)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(pageSize);
-
-        if (lastVisibleDoc != null) {
-            baseQuery = baseQuery.startAfter(lastVisibleDoc);
-        }
-
-        // Gỡ listener cũ nếu đang tồn tại
-        if (currentCommentListener != null) {
-            currentCommentListener.remove();
-        }
-
-        currentCommentListener = baseQuery.addSnapshotListener((snapshots, e) -> {
-            if (e != null) {
-                callback.onError(e);
-                return;
-            }
-
-            if (snapshots != null && !snapshots.isEmpty()) {
-                List<Comment> result = new ArrayList<>();
-                for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                    Comment cmt = doc.toObject(Comment.class);
-                    if (cmt != null) {
-                        cmt.setId(doc.getId());
-                        result.add(cmt);
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
                     }
-                }
 
-                DocumentSnapshot lastDoc = snapshots.getDocuments()
-                        .get(snapshots.size() - 1);
+                    List<Comment> result = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            Comment cmt = doc.toObject(Comment.class);
+                            if (cmt != null) {
+                                cmt.setId(doc.getId());
+                                result.add(cmt);
+                            }
+                        }
+                    }
 
-                callback.onPage(result, lastDoc);
-            } else {
-                callback.onPage(Collections.emptyList(), null);
-            }
-        });
+                    callback.onComplete(result);
+                });
     }
+
+
+
+
+
 
     public void addReplyToComment(
             String chapterId,
@@ -730,6 +716,8 @@ public class ComicRemoteDataSource {
             String userName,
             String avatarUrl,
             String content,
+            String replyName,
+            String userReplyId,
             FirestoreCallbackComment callback
     ) {
         Reply reply = new Reply(
@@ -739,7 +727,9 @@ public class ComicRemoteDataSource {
                 userName,
                 avatarUrl,
                 content,
-                Timestamp.now()
+                Timestamp.now(),
+                replyName,
+                userReplyId
         );
 
         db.collection("chapters")
@@ -755,13 +745,6 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    //hủy listener
-    public void removeCommentListener() {
-        if (currentCommentListener != null) {
-            currentCommentListener.remove();
-            currentCommentListener = null;
-        }
-    }
 
 
     public ListenerRegistration getRepliesRealtime(
@@ -796,8 +779,28 @@ public class ComicRemoteDataSource {
         return listener;
     }
 
+    public void getUser(String userId, FirestoreCallbackOne<UserDto> callback) {
+        db.collection("User")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("Username");
+                        String avatarUrl = documentSnapshot.getString("avatarUrl");
 
+                        UserDto userDTO = new UserDto(userId, username, avatarUrl);
+                        callback.onSuccess(userDTO);
+                    } else {
+                        callback.onFailure(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
+    public interface FirestoreCallbackOne<T> {
+        void onSuccess(T result);
+        void onFailure(Exception e);
+    }
     public interface FirebaseCallback<T> {
         void onComplete(List<T> result);
         void onFailure(Exception e);

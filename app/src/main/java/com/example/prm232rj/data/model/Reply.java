@@ -4,19 +4,23 @@ import com.google.firebase.Timestamp;
 public class Reply {
     private String id;               // Firestore document ID (set sau khi push)
     private String conversationId;   // ID của comment gốc
-    private String replyId;          // userId của người bị reply (nếu có)
+    private String replyId;          //Id của reply được rep.
     private String userId;           // người gửi
     private String userName;
+    private String replyName;        //tên người được nhắc.
     private String avatarUrl;
     private String content;
     private Timestamp createdAt;
+
+    private String userReplyId;       // userId của người bị reply (nếu có)
 
     public Reply() {
         // Required for Firestore deserialization
     }
 
     public Reply(String conversationId, String replyId, String userId,
-                 String userName, String avatarUrl, String content, Timestamp createdAt) {
+                 String userName, String avatarUrl, String content, Timestamp createdAt,
+                 String replyName, String userReplyId) {
         this.conversationId = conversationId;
         this.replyId = replyId;
         this.userId = userId;
@@ -24,6 +28,24 @@ public class Reply {
         this.avatarUrl = avatarUrl;
         this.content = content;
         this.createdAt = createdAt;
+        this.replyName = replyName;
+        this.userReplyId = userReplyId;
+    }
+
+    public String getUserReplyId() {
+        return userReplyId;
+    }
+
+    public void setUserReplyId(String userReplyId) {
+        this.userReplyId = userReplyId;
+    }
+
+    public String getReplyName() {
+        return replyName;
+    }
+
+    public void setReplyName(String replyName) {
+        this.replyName = replyName;
     }
 
     // 🔧 Getter & Setter

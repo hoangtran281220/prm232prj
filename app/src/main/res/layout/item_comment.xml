@@ -11,99 +11,114 @@
             type="int" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:background="@android:color/transparent">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/colorPrimary"
+        app:strokeWidth="1dp"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="false"
+        android:backgroundTint="@android:color/white">
 
-        <!-- Avatar -->
-        <ImageView
-            android:id="@+id/imgAvatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            app:imageUrl="@{comment.avatarUrl}"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <!-- Tên người dùng -->
-        <TextView
-            android:id="@+id/tvUsername"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{comment.userName}"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@id/imgAvatar"
-            app:layout_constraintStart_toEndOf="@id/imgAvatar"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:padding="12dp"
+            android:background="@android:color/transparent">
 
-        <!-- Nội dung -->
-        <TextView
-            android:id="@+id/tvContent"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@{comment.content}"
-            android:textColor="@android:color/black"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toBottomOf="@id/tvUsername"
-            app:layout_constraintStart_toEndOf="@id/imgAvatar"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Avatar -->
+            <ImageView
+                android:id="@+id/imgAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="centerCrop"
+                app:imageUrl="@{comment.avatarUrl}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:background="@drawable/bg_avatar_circle" />
 
-        <!-- Thời gian -->
-        <TextView
-            android:id="@+id/tvTimeAndCode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text='@{comment.createdAt + ""}'
-            android:textColor="@color/black"
-            android:textSize="12sp"
-            android:layout_marginTop="6dp"
-            app:layout_constraintTop_toBottomOf="@id/tvContent"
-            app:layout_constraintStart_toEndOf="@id/imgAvatar" />
+            <!-- Tên người dùng -->
+            <TextView
+                android:id="@+id/tvUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@{comment.userName}"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintTop_toTopOf="@id/imgAvatar"
+                app:layout_constraintStart_toEndOf="@id/imgAvatar"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Nút phản hồi -->
-        <TextView
-            android:id="@+id/btnReply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:textColor="@color/black"
-            android:layout_marginTop="6dp"
-            app:replyCountText="@{replyCount}"
-            app:layout_constraintTop_toBottomOf="@id/tvTimeAndCode"
-            app:layout_constraintStart_toEndOf="@id/imgAvatar" />
+            <!-- Thời gian ở góc phải -->
+            <TextView
+                android:id="@+id/tvTimeAndCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:formatTime='@{comment.createdAt != null ? comment.createdAt.toDate().time : 0L}'
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Nội dung bình luận -->
+            <TextView
+                android:id="@+id/tvContent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@{comment.content}"
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="8dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_comment_bubble"
+                app:layout_constraintTop_toBottomOf="@id/tvUsername"
+                app:layout_constraintStart_toEndOf="@id/imgAvatar"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Nút trả lời -->
-        <TextView
-            android:id="@+id/btnAnswer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Trả lời"
-            android:textColor="@color/black"
-            android:textSize="13sp"
-            android:layout_marginStart="12dp"
-            app:layout_constraintTop_toTopOf="@id/btnReply"
-            app:layout_constraintStart_toEndOf="@id/btnReply" />
+            <!-- Nút phản hồi -->
+            <TextView
+                android:id="@+id/btnReply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="6dp"
+                app:replyCountText="@{replyCount}"
+                app:layout_constraintTop_toBottomOf="@id/tvContent"
+                app:layout_constraintStart_toEndOf="@id/imgAvatar" />
 
-        <!-- RecyclerView hiển thị replies -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerReplies"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="48dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/btnReply"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            <!-- Nút trả lời -->
+            <TextView
+                android:id="@+id/btnAnswer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trả lời"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp"
+                android:layout_marginStart="12dp"
+                app:layout_constraintTop_toTopOf="@id/btnReply"
+                app:layout_constraintStart_toEndOf="@id/btnReply" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Replies -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerReplies"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="48dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/btnReply"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>
