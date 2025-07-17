@@ -1,5 +1,7 @@
 package com.example.prm232rj.ui.screen.Fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -211,5 +213,29 @@ public class HomeFragment extends Fragment {
             adapter.updateComicSection("Manhwa", new ArrayList<>(comics));
         });
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("APP_PREF", Context.MODE_PRIVATE);
+        boolean shouldRefresh = prefs.getBoolean("should_refresh_home", false);
+
+        if (shouldRefresh) {
+            // ✅ Gọi lại các hàm load dữ liệu
+            viewModel.loadBanners(requireActivity());
+            viewModel.loadComicsTop3(requireActivity());
+            viewModel.loadComicsByTagForHome(requireActivity(), "4");
+            viewModel.loadComicsByTagForHome(requireActivity(), "2");
+            viewModel.loadComicsByTagForHome(requireActivity(), "10");
+            viewModel.loadComicsByTagForHome(requireActivity(), "14");
+            viewModel.loadComicsByTagForHome(requireActivity(), "5");
+            viewModel.loadComicsByTagForHome(requireActivity(), "13");
+
+            // ❌ Xóa flag sau khi xử lý
+            prefs.edit().remove("should_refresh_home").apply();
+        }
+    }
+
 
 }

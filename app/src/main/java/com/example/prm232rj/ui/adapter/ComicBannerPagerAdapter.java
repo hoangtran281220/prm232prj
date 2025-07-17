@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.databinding.ItemBannerContentBinding;
 import com.example.prm232rj.databinding.ItemComicsBannerBinding;
+import com.example.prm232rj.ui.screen.Activities.ComicDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,11 @@ public class ComicBannerPagerAdapter extends RecyclerView.Adapter<ComicBannerPag
         ComicDtoBanner item = bannerList.get(position);
         holder.binding.setItem(item);
         holder.binding.executePendingBindings();
-//
+        holder.binding.getRoot().setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ComicDetailActivity.class);
+            intent.putExtra("COMIC_ID", item.getId()); // Truyền ID của truyện
+            v.getContext().startActivity(intent);
+        });
 //        Glide.with(holder.binding.getRoot().getContext())
 //                .load(item.getCoverImage())
 //                .into(holder.binding.imageBanner);

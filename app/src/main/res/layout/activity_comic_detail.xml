@@ -89,8 +89,7 @@
                             android:id="@+id/textRating"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@{String.valueOf(comic.rating)}"
-                            android:textSize="16sp"
+                            android:text='@{String.format("%.1f", comic.rating)}'                            android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="4.5" />
 

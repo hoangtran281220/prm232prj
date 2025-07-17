@@ -15,6 +15,7 @@ import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
 import com.example.prm232rj.data.model.RatingResult;
+import com.example.prm232rj.data.model.Reply;
 import com.example.prm232rj.data.model.Tag;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -210,6 +211,41 @@ public class ComicRepository {
 
     public void rateComic(String comicId, String userId, double rating, OnCompleteListener<RatingResult> listener) {
         remoteDataSource.rateComic(comicId, userId, rating, listener);
+    }
+
+    public void addCommentToChapter(
+            String chapterId,
+            String userId,
+            String userName,
+            String avatarUrl,
+            String content,
+            ComicRemoteDataSource.FirestoreCallbackComment callback
+    ) {
+        remoteDataSource.addCommentToChapter(
+                chapterId,
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                callback
+        );
+    }
+
+    public void getPagedRootCommentsRealtime(
+            String chapterId,
+            @Nullable DocumentSnapshot lastVisible,
+            int pageSize,
+            ComicRemoteDataSource.FirebaseCommentPagingCallback callback
+    ) {
+        remoteDataSource.getPagedRootCommentsRealtime(chapterId, lastVisible, pageSize, callback);
+    }
+
+    public void removeCommentListener() {
+        remoteDataSource.removeCommentListener();
+    }
+
+    public ListenerRegistration getRepliesRealtime(String chapterId, String commentId, ComicRemoteDataSource.FirebaseCallback<Reply> callback) {
+        return remoteDataSource.getRepliesRealtime(chapterId, commentId, callback);
     }
 
 }

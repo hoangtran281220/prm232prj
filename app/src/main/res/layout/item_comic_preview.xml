@@ -56,7 +56,7 @@
             android:id="@+id/tvComicRating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{item.ratingCount > 0 ? "⭐: " + String.valueOf(item.rating)+"("+item.ratingCount+"lượt đánh giá)" : "☆: Chưa có"}'
+            android:text='@{item.ratingCount > 0 ? "⭐: " + String.format("%.1f", item.rating)+"("+item.ratingCount+"lượt)" : "☆: Chưa có"}'
             android:textSize="12sp"
             android:textColor="#777777"
             app:layout_constraintTop_toBottomOf="@id/tvComicStatus"

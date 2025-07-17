@@ -12,8 +12,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 
 import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentSearchBinding;
@@ -140,7 +142,22 @@ public class SearchFragment extends Fragment {
 
         binding.toolbarSearch.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_search) {
+                MenuItem searchItem = binding.toolbarSearch.getMenu().findItem(R.id.action_search);
+                SearchView searchView = (SearchView) searchItem.getActionView();
+                searchView.setQueryHint("Nhập tên truyện...");
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        //performSearch(query);
+                        return true;
+                    }
 
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        // Nếu muốn lọc realtime thì gọi tại đây
+                        return false;
+                    }
+                });
                 return true;
             } else if (item.getItemId() == R.id.action_filter) {
                 // Hiển thị dialog lọc truyện
@@ -156,5 +173,7 @@ public class SearchFragment extends Fragment {
             }
             return false;
         });
+
+
     }
 }

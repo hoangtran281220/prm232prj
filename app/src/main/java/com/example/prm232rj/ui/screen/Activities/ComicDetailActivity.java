@@ -42,7 +42,6 @@ public class ComicDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityComicDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         // Khởi tạo ViewModel
         viewModel = new ViewModelProvider(this).get(ComicDetailViewModel.class);
         historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
@@ -242,6 +241,8 @@ public class ComicDetailActivity extends AppCompatActivity {
                         binding.setComic(comic);
                         binding.executePendingBindings();
                     }
+                    SharedPreferences prefs = getSharedPreferences("APP_PREF", MODE_PRIVATE);
+                    prefs.edit().putBoolean("should_refresh_home", true).apply();
 
                 } else {
                     Toast.makeText(this, "Đánh giá thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();

@@ -1,5 +1,6 @@
 package com.example.prm232rj.ui.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.prm232rj.data.interfaces.IComicPreview;
 import com.example.prm232rj.databinding.ItemComicTopBinding;
 import com.example.prm232rj.databinding.ItemTopComicPageBinding;
+import com.example.prm232rj.ui.screen.Activities.ComicDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ public class TopComicAdapter extends RecyclerView.Adapter<TopComicAdapter.PageVi
     @Override
     public void onBindViewHolder(@NonNull PageViewHolder holder, int position) {
         holder.bind(pages.get(position));
+
     }
 
     @Override
@@ -72,7 +75,11 @@ public class TopComicAdapter extends RecyclerView.Adapter<TopComicAdapter.PageVi
                 itemBinding.setItem(item);
                 itemBinding.setIndex(index);
                 itemBinding.executePendingBindings();
-
+                itemBinding.getRoot().setOnClickListener(v -> {
+                    Intent intent = new Intent(v.getContext(), ComicDetailActivity.class);
+                    intent.putExtra("COMIC_ID", item.getId()); // Truyền ID của truyện
+                    v.getContext().startActivity(intent);
+                });
                 binding.linearContainer.addView(itemBinding.getRoot());
             }
         }

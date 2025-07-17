@@ -13,7 +13,9 @@ import com.example.prm232rj.data.dto.TagDto;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.Comment;
 import com.example.prm232rj.data.model.RatingResult;
+import com.example.prm232rj.data.model.Reply;
 import com.example.prm232rj.data.model.Tag;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
@@ -41,6 +43,7 @@ import javax.inject.Singleton;
 public class ComicRemoteDataSource {
     private final FirebaseFirestore db;
     private static final String TAG = "ComicRemoteDataSource";
+    private ListenerRegistration currentCommentListener;
 
     @Inject
     public ComicRemoteDataSource() {
@@ -640,11 +643,168 @@ public class ComicRemoteDataSource {
             return new RatingResult(updatedAvg, ratingCount);
         }).addOnCompleteListener(listener);
     }
+    //add comment
+    public void addCommentToChapter(
+            String chapterId,
+            String userId,
+            String userName,
+            String avatarUrl,
+            String content,
+            FirestoreCallbackComment callback
+    ) {
+        // Tạo comment object
+        Comment comment = new Comment(
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                Timestamp.now()
+        );
+
+        // Đưa lên Firestore theo path: chapters/{chapterId}/comments
+        db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .add(comment)
+                .addOnSuccessListener(documentReference -> {
+                    comment.setId(documentReference.getId());
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    //get all comments
+    public void getPagedRootCommentsRealtime(
+            String chapterId,
+            @Nullable DocumentSnapshot lastVisibleDoc,
+            int pageSize,
+            FirebaseCommentPagingCallback callback
+    ) {
+        Query baseQuery = db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .whereEqualTo("parentId", null)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(pageSize);
+
+        if (lastVisibleDoc != null) {
+            baseQuery = baseQuery.startAfter(lastVisibleDoc);
+        }
+
+        // Gỡ listener cũ nếu đang tồn tại
+        if (currentCommentListener != null) {
+            currentCommentListener.remove();
+        }
+
+        currentCommentListener = baseQuery.addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                callback.onError(e);
+                return;
+            }
+
+            if (snapshots != null && !snapshots.isEmpty()) {
+                List<Comment> result = new ArrayList<>();
+                for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                    Comment cmt = doc.toObject(Comment.class);
+                    if (cmt != null) {
+                        cmt.setId(doc.getId());
+                        result.add(cmt);
+                    }
+                }
+
+                DocumentSnapshot lastDoc = snapshots.getDocuments()
+                        .get(snapshots.size() - 1);
+
+                callback.onPage(result, lastDoc);
+            } else {
+                callback.onPage(Collections.emptyList(), null);
+            }
+        });
+    }
+
+    public void addReplyToComment(
+            String chapterId,
+            String commentId,         // comment gốc (conversation)
+            String replyToUserId,     // userId của người bị rep (không bao giờ null)
+            String userId,            // user gửi reply
+            String userName,
+            String avatarUrl,
+            String content,
+            FirestoreCallbackComment callback
+    ) {
+        Reply reply = new Reply(
+                commentId,          // conversationId = ID của comment gốc
+                replyToUserId,      // người bị reply
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                Timestamp.now()
+        );
+
+        db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .add(reply)
+                .addOnSuccessListener(docRef -> {
+                    reply.setId(docRef.getId());
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    //hủy listener
+    public void removeCommentListener() {
+        if (currentCommentListener != null) {
+            currentCommentListener.remove();
+            currentCommentListener = null;
+        }
+    }
+
+
+    public ListenerRegistration getRepliesRealtime(
+            String chapterId,
+            String commentId,
+            FirebaseCallback<Reply> callback
+    ) {
+        ListenerRegistration listener = db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null || snapshots == null) {
+                        callback.onFailure(error);
+                        return;
+                    }
+
+                    List<Reply> replies = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Reply reply = doc.toObject(Reply.class);
+                        if (reply != null) {
+                            reply.setId(doc.getId());
+                            replies.add(reply);
+                        }
+                    }
+
+                    callback.onComplete(replies);
+                });
+
+        return listener;
+    }
 
 
 
     public interface FirebaseCallback<T> {
         void onComplete(List<T> result);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreCallbackComment {
+        void onSuccess();
         void onFailure(Exception e);
     }
 
@@ -655,6 +815,11 @@ public class ComicRemoteDataSource {
     public interface RealtimeComicCallback {
         void onSuccess(List<ComicDtoPreview> comics);
         void onFailure(Exception e);
+    }
+
+    public interface FirebaseCommentPagingCallback {
+        void onPage(List<Comment> comments, @Nullable DocumentSnapshot lastVisible);
+        void onError(Exception e);
     }
 
 }

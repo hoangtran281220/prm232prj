@@ -6,6 +6,7 @@
         android:id="@+id/action_search"
         android:icon="@drawable/baseline_manage_search_24"
         android:title="Tìm kiếm"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
 
     <item

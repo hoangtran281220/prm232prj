@@ -1,5 +1,6 @@
 package com.example.prm232rj.utils;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,6 +26,16 @@ public class BindingAdapters {
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault());
             String time = sdf.format(new Date(timestamp));
             textView.setText(time);
+        }
+    }
+
+    @BindingAdapter("replyCountText")
+    public static void setReplyCountText(TextView view, int replyCount) {
+        if (replyCount <= 0) {
+            view.setVisibility(View.GONE);
+        } else {
+            view.setVisibility(View.VISIBLE);
+            view.setText("Phản hồi (" + replyCount + ")");
         }
     }
 }

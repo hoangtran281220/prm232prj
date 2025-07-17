@@ -68,7 +68,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp" />
 
-            <!-- Phụ đề (tác giả/thể loại) -->
+            <!-- Trạng thái truyện -->
             <TextView
                 android:id="@+id/tvSubtitle"
                 android:layout_width="0dp"
@@ -80,10 +80,32 @@
                 android:ellipsize="end"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle"
                 app:layout_constraintStart_toStartOf="@id/tvTitle"
-                app:layout_constraintEnd_toEndOf="@id/tvTitle"
-                app:layout_constraintBottom_toBottomOf="@id/ivCover" />
+                app:layout_constraintEnd_toEndOf="@id/tvTitle" />
+
+            <!-- Rating -->
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{String.format("%.1f★", item.rating)}'
+                android:textSize="13sp"
+                android:textColor="#666666"
+                app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
+                app:layout_constraintStart_toStartOf="@id/tvSubtitle"
+                android:layout_marginTop="4dp" />
+
+            <!-- Current Chapter -->
+            <TextView
+                android:id="@+id/tvCurrentChapter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{String.format("Chap %d", item.currentChapter)}'
+                android:textSize="13sp"
+                android:textColor="#666666"
+                app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
+                app:layout_constraintEnd_toEndOf="@id/tvSubtitle"
+                android:layout_marginTop="4dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </androidx.cardview.widget.CardView>
 </layout>

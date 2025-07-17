@@ -1,63 +1,59 @@
 package com.example.prm232rj.ui.screen.Activities;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.prm232rj.R;
+
 import com.example.prm232rj.data.repository.ComicRepository;
 import com.example.prm232rj.data.room.ReadHistoryEntity;
+import com.example.prm232rj.databinding.ActivityChapterBinding;
 import com.example.prm232rj.ui.adapter.ImageForChapterAdapter;
+import com.example.prm232rj.ui.screen.Dialogs.CommentDialogFragment;
 import com.example.prm232rj.ui.viewmodel.ChapterViewModel;
-import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.ui.viewmodel.ReadHistoryViewModel;
 
 import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ChapterActivity extends AppCompatActivity {
     private ChapterViewModel viewModel;
-    private ImageForChapterAdapter imageAdapter;
-    private TextView chapterTitle;
-    private Button prevButton;
-    private Button nextButton;
     private ReadHistoryViewModel historyViewModel;
+    private ImageForChapterAdapter imageAdapter;
+    private ActivityChapterBinding binding;
+
     @Inject
     ComicRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chapter);
+        binding = ActivityChapterBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        binding.setCount(0); // Giá trị mặc định của commentCount nếu cần
 
         String comicId = getIntent().getStringExtra("COMIC_ID");
         String chapterId = getIntent().getStringExtra("CHAPTER_ID");
 
-        chapterTitle = findViewById(R.id.chapter_title);
-        prevButton = findViewById(R.id.prev_button);
-        nextButton = findViewById(R.id.next_button);
-
-        RecyclerView recyclerView = findViewById(R.id.image_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         imageAdapter = new ImageForChapterAdapter();
-        recyclerView.setAdapter(imageAdapter);
-        historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
+        binding.imageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.imageRecyclerView.setAdapter(imageAdapter);
 
         viewModel = new ViewModelProvider(this).get(ChapterViewModel.class);
         viewModel.init(comicId, chapterId);
 
+        historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
+
         viewModel.getCurrentChapter().observe(this, chapter -> {
             if (chapter != null) {
-                chapterTitle.setText(chapter.getChapterTitle());
+                binding.chapterTitle.setText(chapter.getChapterTitle());
                 imageAdapter.setImageUrls(chapter.getContentImages());
 
                 ReadHistoryEntity entity = new ReadHistoryEntity();
-                entity.comicId = viewModel.getComicId();
+                entity.comicId = comicId;
                 entity.chapterReading = chapter.getChapterNumber();
                 entity.lastReadAt = System.currentTimeMillis();
                 entity.chapterId = chapter.getChapterId();
@@ -67,11 +63,17 @@ public class ChapterActivity extends AppCompatActivity {
         });
 
         viewModel.getChapters().observe(this, chapters -> {
-            prevButton.setEnabled(chapters != null && !chapters.isEmpty());
-            nextButton.setEnabled(chapters != null && !chapters.isEmpty());
+            boolean hasChapters = chapters != null && !chapters.isEmpty();
+            binding.prevButton.setEnabled(hasChapters);
+            binding.nextButton.setEnabled(hasChapters);
         });
-
-        prevButton.setOnClickListener(v -> viewModel.loadPreviousChapter());
-        nextButton.setOnClickListener(v -> viewModel.loadNextChapter());
+        binding.imgComment.setOnClickListener(v -> {
+            if (chapterId != null) {
+                CommentDialogFragment dialog = new CommentDialogFragment(chapterId);
+                dialog.show(getSupportFragmentManager(), "comment_dialog");
+            }
+        });
+        binding.prevButton.setOnClickListener(v -> viewModel.loadPreviousChapter());
+        binding.nextButton.setOnClickListener(v -> viewModel.loadNextChapter());
     }
 }
