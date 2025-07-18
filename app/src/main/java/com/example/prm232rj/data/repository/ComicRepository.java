@@ -233,6 +233,32 @@ public class ComicRepository {
         );
     }
 
+    public void addReplyToComment(
+            String chapterId,
+            String commentId,
+            String replyId,
+            String userId,
+            String userName,
+            String avatarUrl,
+            String content,
+            String replyName,
+            String userReplyId,
+            ComicRemoteDataSource.FirestoreCallbackComment callback
+    ) {
+        remoteDataSource.addReplyToComment(
+                chapterId,
+                commentId,
+                replyId,
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                replyName,
+                userReplyId,
+                callback
+        );
+    }
+
     public ListenerRegistration listenToRootComments(String chapterId, ComicRemoteDataSource.FirebaseCallback<Comment> callback) {
         return remoteDataSource.listenToRootComments(chapterId, callback);
     }
@@ -242,6 +268,8 @@ public class ComicRepository {
         return remoteDataSource.getRepliesRealtime(chapterId, commentId, callback);
     }
 
-
+    public void getReplyCount(String chapterId, String commentId, ComicRemoteDataSource.FirestoreCallbackOne<Integer> callback) {
+        remoteDataSource.getReplyCount(chapterId, commentId, callback);
+    }
 
 }

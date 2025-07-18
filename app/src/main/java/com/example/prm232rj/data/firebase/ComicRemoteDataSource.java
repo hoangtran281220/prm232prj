@@ -711,18 +711,18 @@ public class ComicRemoteDataSource {
     public void addReplyToComment(
             String chapterId,
             String commentId,         // comment gốc (conversation)
-            String replyToUserId,     // userId của người bị rep (không bao giờ null)
+            String replyId,           //id của reply đc reply
             String userId,            // user gửi reply
             String userName,
             String avatarUrl,
             String content,
             String replyName,
-            String userReplyId,
+            String userReplyId,     // userId của người bị rep (không bao giờ null)
             FirestoreCallbackComment callback
     ) {
         Reply reply = new Reply(
                 commentId,          // conversationId = ID của comment gốc
-                replyToUserId,      // người bị reply
+                replyId,      // id của reply được reply
                 userId,
                 userName,
                 avatarUrl,
@@ -793,6 +793,20 @@ public class ComicRemoteDataSource {
                     } else {
                         callback.onFailure(new Exception("User not found"));
                     }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getReplyCount(String chapterId, String commentId, FirestoreCallbackOne<Integer> callback) {
+        FirebaseFirestore.getInstance()
+                .collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    callback.onSuccess(querySnapshot.size());
                 })
                 .addOnFailureListener(callback::onFailure);
     }

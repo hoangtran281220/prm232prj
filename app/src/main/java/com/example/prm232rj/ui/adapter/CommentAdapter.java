@@ -2,18 +2,22 @@ package com.example.prm232rj.ui.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.prm232rj.data.model.Comment;
 import com.example.prm232rj.data.model.Reply;
 import com.example.prm232rj.databinding.ItemCommentBinding;
+import com.example.prm232rj.ui.screen.Dialogs.ReplyInputDialogFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,13 +26,22 @@ import java.util.Map;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
     private List<Comment> commentList;
+    private final Fragment parentFragment;
+    private String chapterId;
     private final Map<String, List<Reply>> repliesMap = new HashMap<>();
     private final Map<String, Boolean> expandedReplies = new HashMap<>();
+    private final Map<String, ReplyAdapter> replyAdapters = new HashMap<>();
+    private OnReplyCountRequestListener replyCountListener;
+    private Map<String, Integer> replyCounts = new HashMap<>();
 
+    public interface OnReplyCountRequestListener {
+        void onRequestReplyCount(String commentId);
+    }
     // Callback để yêu cầu ViewModel load replies
     public interface OnExpandRepliesListener {
         void onExpandReplies(String commentId);
     }
+
     public void setData(List<Comment> newData) {
         this.commentList.clear();
         this.commentList.addAll(newData);
@@ -36,8 +49,22 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     }
     private OnExpandRepliesListener listener;
 
-    public CommentAdapter(List<Comment> commentList) {
+    public void setChapterId(String chapterId) {
+        this.chapterId = chapterId;
+    }
+
+    public void setReplyCounts(Map<String, Integer> replyCounts) {
+        this.replyCounts = replyCounts;
+        notifyDataSetChanged();
+    }
+    public void setOnReplyCountRequestListener(OnReplyCountRequestListener listener) {
+        this.replyCountListener = listener;
+    }
+
+
+    public CommentAdapter(List<Comment> commentList, Fragment parentFragment) {
         this.commentList = commentList;
+        this.parentFragment = parentFragment;
     }
 
     public void setOnExpandRepliesListener(OnExpandRepliesListener listener) {
@@ -72,34 +99,50 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         Comment comment = commentList.get(position);
         holder.binding.setComment(comment);
 
-        // Reply adapter
-        ReplyAdapter replyAdapter = new ReplyAdapter(new ArrayList<>());
-        holder.binding.recyclerReplies.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
-        holder.binding.recyclerReplies.setAdapter(replyAdapter);
-        holder.binding.recyclerReplies.setNestedScrollingEnabled(false);
-
         boolean isExpanded = expandedReplies.getOrDefault(comment.getId(), false);
-        holder.binding.recyclerReplies.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-        int count = repliesMap.containsKey(comment.getId())
-                ? repliesMap.get(comment.getId()).size()
-                : 0;
-        holder.binding.setReplyCount(count);
 
-        // Nếu đang mở và đã có data -> hiển thị
-        if (isExpanded && repliesMap.containsKey(comment.getId())) {
-            replyAdapter.setReplies(repliesMap.get(comment.getId()));
+        holder.binding.recyclerReplies.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+        // Adapter reply (chỉ khi expand)
+        if (isExpanded) {
+            ReplyAdapter replyAdapter = replyAdapters.get(comment.getId());
+            if (replyAdapter == null) {
+                replyAdapter = new ReplyAdapter(new ArrayList<>());
+                replyAdapter.setContextInfo(parentFragment, chapterId, comment.getId()); // truyền thêm
+                replyAdapters.put(comment.getId(), replyAdapter);
+            }
+            holder.binding.recyclerReplies.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
+            holder.binding.recyclerReplies.setAdapter(replyAdapter);
+
+            if (repliesMap.containsKey(comment.getId())) {
+                replyAdapter.setReplies(repliesMap.get(comment.getId()));
+            }
+        } else {
+            holder.binding.recyclerReplies.setAdapter(null);
+            replyAdapters.remove(comment.getId()); // Xóa adapter khi collapse để tiết kiệm bộ nhớ
         }
 
-        // Sự kiện click "Phản hồi"
+        int count = replyCounts.containsKey(comment.getId()) ? replyCounts.get(comment.getId()) : 0;
+        holder.binding.setReplyCount(count);
+
         holder.binding.btnReply.setOnClickListener(v -> {
             boolean currentlyVisible = expandedReplies.getOrDefault(comment.getId(), false);
             expandedReplies.put(comment.getId(), !currentlyVisible);
 
-            if (!currentlyVisible && listener != null) {
-                listener.onExpandReplies(comment.getId()); // ViewModel sẽ xử lý việc fetch
+            if (currentlyVisible) {
+                replyAdapters.remove(comment.getId());
+                holder.binding.recyclerReplies.setAdapter(null);
+            } else if (listener != null) {
+                listener.onExpandReplies(comment.getId());
             }
+
             notifyItemChanged(position);
         });
+
+
+        if (replyCountListener != null) {
+            replyCountListener.onRequestReplyCount(comment.getId());
+        }
 
         holder.binding.btnAnswer.setOnClickListener(v -> {
             Context context = v.getContext();
@@ -111,10 +154,19 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 return;
             }
 
-            // TODO: xử lý nếu đã đăng nhập, ví dụ: mở giao diện nhập phản hồi
+            String replyId = comment.getId();
+            String userReplyId = comment.getUserId();
+            String replyName = comment.getUserName();
 
+            ReplyInputDialogFragment dialog = new ReplyInputDialogFragment(
+                    comment.getId(),   // conversationId
+                    replyId,
+                    userReplyId,
+                    replyName,
+                    chapterId
+            );
+            dialog.show(parentFragment.getParentFragmentManager(), "ReplyInputDialog");
         });
-
     }
 
     @Override

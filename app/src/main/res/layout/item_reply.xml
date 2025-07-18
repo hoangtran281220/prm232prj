@@ -74,7 +74,7 @@
             android:id="@+id/tvReplyTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{reply.createdAt + ""}'
+            app:formatTime='@{reply.createdAt != null ? reply.createdAt.toDate().time : 0L}'
             android:textColor="@color/black"
             android:textSize="11sp"
             android:layout_marginTop="6dp"

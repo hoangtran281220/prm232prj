@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.prm232rj.data.dto.UserDto;
 import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
+import com.example.prm232rj.data.model.Comment;
 import com.example.prm232rj.data.model.User;
 import com.example.prm232rj.databinding.DialogCommentsBinding;
 import com.example.prm232rj.ui.adapter.CommentAdapter;
@@ -66,16 +67,12 @@ public class CommentDialogFragment extends DialogFragment {
         viewModel.listenToRootComments();
 
         // Setup RecyclerView
-        adapter = new CommentAdapter(new ArrayList<>());
+        adapter = new CommentAdapter(new ArrayList<>(), this);
+        adapter.setChapterId(chapterId);
         adapter.setOnExpandRepliesListener(commentId -> viewModel.loadReplies(commentId));
         binding.recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerComments.setAdapter(adapter);
 
-
-        // Quan sát danh sách comment
-        viewModel.getCommentsLiveData().observe(getViewLifecycleOwner(), comments -> {
-            adapter.setData(comments); // Hoặc adapter.submitList(comments) nếu dùng ListAdapter
-        });
 
         // Quan sát replies map để update mỗi comment
         viewModel.getRepliesLiveData().observe(getViewLifecycleOwner(), repliesMap -> {
@@ -109,7 +106,16 @@ public class CommentDialogFragment extends DialogFragment {
             }
         });
 
+        viewModel.getReplyCounts().observe(getViewLifecycleOwner(), replyCounts -> {
+            adapter.setReplyCounts(replyCounts);
+        });
 
+        viewModel.getCommentsLiveData().observe(getViewLifecycleOwner(), comments -> {
+            adapter.setData(comments);
+            for (Comment comment : comments) {
+                viewModel.listenToReplyCountRealtime(chapterId, comment.getId()); // Thay vì fetch tĩnh
+            }
+        });
 
         // Nút đóng dialog
         binding.btnClose.setOnClickListener(v -> dismiss());
