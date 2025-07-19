@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@android:color/holo_blue_light">
+    android:background="@drawable/bg_comment_bubble">
 
     <!-- Header -->
     <TextView
