@@ -811,6 +811,28 @@ public class ComicRemoteDataSource {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void searchComicsByTitleContains(String keyword, FirebaseCallback<ComicDtoWithTags> callback) {
+        db.collection("comics")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null && comic.getTitle() != null &&
+                                comic.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+                    Log.d("mytest","size:"+result.size());
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+
     public interface FirestoreCallbackOne<T> {
         void onSuccess(T result);
         void onFailure(Exception e);

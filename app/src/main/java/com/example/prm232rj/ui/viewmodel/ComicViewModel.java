@@ -39,6 +39,11 @@ public class ComicViewModel extends ViewModel {
     private final MutableLiveData<List<ComicDtoWithTags>> filteredComics = new MutableLiveData<>();
     private ListenerRegistration comicTopListener;
     private ListenerRegistration bannerListener;
+
+    private final MutableLiveData<List<ComicDtoWithTags>> searchResults = new MutableLiveData<>();
+    public LiveData<List<ComicDtoWithTags>> getSearchResults() {
+        return searchResults;
+    }
     private static final int PAGE_SIZE = 12;
 
     private String currentPagingTagId;
@@ -270,6 +275,22 @@ public class ComicViewModel extends ViewModel {
             @Override
             public void onFailure(Exception e) {
                 Log.e("ComicViewModel", "Failed to load next page of filtered comics", e);
+            }
+        });
+    }
+
+    public void searchComicsByTitleContains(String keyword) {
+        Log.d("mytest","ok");
+        repository.searchComicsByTitleContains(keyword, new ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags>() {
+            @Override
+            public void onComplete(List<ComicDtoWithTags> result) {
+                searchResults.postValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("mytest","fail");
+                searchResults.postValue(Collections.emptyList());
             }
         });
     }

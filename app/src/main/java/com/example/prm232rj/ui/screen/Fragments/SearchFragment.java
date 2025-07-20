@@ -11,11 +11,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 
 import com.example.prm232rj.R;
 import com.example.prm232rj.databinding.FragmentSearchBinding;
@@ -50,7 +51,10 @@ public class SearchFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private ComicPreviewAdapter adapter;;
+    private ComicPreviewAdapter adapter;
+
+    private ComicPreviewAdapter searchResultAdapter;
+
     public SearchFragment() {
         // Required empty public constructor
     }
@@ -92,24 +96,31 @@ public class SearchFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         binding.toolbarSearch.setTitle("Khám phá");
         comicViewModel = new ViewModelProvider(this).get(ComicViewModel.class);
         filterPrefManager = new FilterPrefManager(requireContext());
 
-        //Lấy filter đã lưu
-        List<String> savedTagIds = new ArrayList<>(filterPrefManager.getSavedTagIds());
-        String savedSort = filterPrefManager.getSavedSort();
-        String savedStatus = filterPrefManager.getSavedStatus();
+        // Adapter cho kết quả tìm kiếm nổi
+        searchResultAdapter = new ComicPreviewAdapter(Collections.emptyList());
+        binding.rvSearchResult.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        binding.rvSearchResult.setAdapter(searchResultAdapter);
 
-        //set up adapter và gán dữ liệu khởi đầu
+        // set up adapter chính
         adapter = new ComicPreviewAdapter(Collections.emptyList());
         binding.recyclerViewSearch.setLayoutManager(new GridLayoutManager(getContext(), 3));
         binding.recyclerViewSearch.setAdapter(adapter);
         binding.recyclerViewSearch.setHasFixedSize(true);
+
+        // load khởi đầu
+        List<String> savedTagIds = new ArrayList<>(filterPrefManager.getSavedTagIds());
+        String savedSort = filterPrefManager.getSavedSort();
+        String savedStatus = filterPrefManager.getSavedStatus();
         comicViewModel.loadFilteredComics(savedTagIds, savedStatus, savedSort);
+
         comicViewModel.getFilteredComics().observe(getViewLifecycleOwner(), comics -> {
             adapter.setData(comics);
-            isLoading = false; // cho phép load tiếp trang mới
+            isLoading = false;
         });
 
         binding.recyclerViewSearch.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -119,7 +130,6 @@ public class SearchFragment extends Fragment {
 
                 if (dy <= 0 || isLoading) return;
                 GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-
                 if (layoutManager == null) return;
 
                 int visibleItemCount = layoutManager.getChildCount();
@@ -130,7 +140,6 @@ public class SearchFragment extends Fragment {
                         && firstVisibleItemPosition >= 0 && totalItemCount >= 12) {
 
                     isLoading = true;
-
                     List<String> tagIds = new ArrayList<>(filterPrefManager.getSavedTagIds());
                     String sort = filterPrefManager.getSavedSort();
                     String status = filterPrefManager.getSavedStatus();
@@ -140,33 +149,36 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        binding.toolbarSearch.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_search) {
-                MenuItem searchItem = binding.toolbarSearch.getMenu().findItem(R.id.action_search);
-                SearchView searchView = (SearchView) searchItem.getActionView();
-                searchView.setQueryHint("Nhập tên truyện...");
-                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        //performSearch(query);
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        // Nếu muốn lọc realtime thì gọi tại đây
-                        return false;
-                    }
-                });
+        // ✅ LẤY SearchView TỪ MENU NGAY KHI GIAO DIỆN TẠO XONG
+        MenuItem searchItem = binding.toolbarSearch.getMenu().findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQueryHint("Nhập tên truyện...");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d("mytest", "submit: " + query);
+                comicViewModel.searchComicsByTitleContains(query);
                 return true;
-            } else if (item.getItemId() == R.id.action_filter) {
-                // Hiển thị dialog lọc truyện
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("mytest", "change: " + newText);
+                if (newText.isEmpty()) {
+                    binding.rvSearchResult.setVisibility(View.GONE);
+                    binding.tvNoResult.setVisibility(View.GONE);
+                } else {
+                    comicViewModel.searchComicsByTitleContains(newText);
+                }
+                return true;
+            }
+        });
+
+        // ✅ Chỉ xử lý FILTER ở MenuClick
+        binding.toolbarSearch.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_filter) {
                 FilterComicDialogFragment dialog = new FilterComicDialogFragment(
-                        (tagIds, sort, status) -> {
-                            // Gọi ViewModel để load dữ liệu truyện theo bộ lọc
-                            //viewModel.loadComicsByFilters(tagIds, sort, status);
-                            comicViewModel.loadFilteredComics(tagIds, status, sort);
-                        }
+                        (tagIds, sort, status) -> comicViewModel.loadFilteredComics(tagIds, status, sort)
                 );
                 dialog.show(getChildFragmentManager(), "FilterDialog");
                 return true;
@@ -174,6 +186,16 @@ public class SearchFragment extends Fragment {
             return false;
         });
 
-
+        // Kết quả tìm kiếm realtime
+        comicViewModel.getSearchResults().observe(getViewLifecycleOwner(), comics -> {
+            if (comics.isEmpty()) {
+                binding.rvSearchResult.setVisibility(View.GONE);
+                binding.tvNoResult.setVisibility(View.VISIBLE);
+            } else {
+                binding.rvSearchResult.setVisibility(View.VISIBLE);
+                binding.tvNoResult.setVisibility(View.GONE);
+                searchResultAdapter.setData(comics);
+            }
+        });
     }
 }

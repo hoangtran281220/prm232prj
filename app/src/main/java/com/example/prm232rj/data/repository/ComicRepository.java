@@ -272,4 +272,9 @@ public class ComicRepository {
         remoteDataSource.getReplyCount(chapterId, commentId, callback);
     }
 
+    public void searchComicsByTitleContains(String keyword, ComicRemoteDataSource.FirebaseCallback<ComicDtoWithTags> callback) {
+        remoteDataSource.searchComicsByTitleContains(keyword, callback);
+    }
+
+
 }
