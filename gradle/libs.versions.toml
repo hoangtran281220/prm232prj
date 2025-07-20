@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.1"
+androidActivation = "1.6.7"
 firebaseAuthVersion = "22.3.0"
 googleFirebaseFirestore = "24.10.3"
 junit = "4.13.2"
@@ -21,6 +22,8 @@ preference = "1.2.0"
 
 
 [libraries]
+android-activation = { module = "com.sun.mail:android-activation", version.ref = "androidActivation" }
+android-mail = { module = "com.sun.mail:android-mail", version.ref = "androidActivation" }
 com-google-firebase-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-auth-v2230 = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuthVersion" }
 firebase-firestore-v24103 = { module = "com.google.firebase:firebase-firestore", version.ref = "googleFirebaseFirestore" }

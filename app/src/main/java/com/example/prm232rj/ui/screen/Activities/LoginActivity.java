@@ -7,14 +7,18 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.prm232rj.MainActivity;
 import com.example.prm232rj.R;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.prm232rj.data.model.User;
+import com.example.prm232rj.ui.screen.Fragments.RegisterFragment;
 import com.example.prm232rj.ui.viewmodel.AuthViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -22,6 +26,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import android.widget.ImageView;
 
@@ -42,6 +51,14 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_login);
+        TextView tvSignUp = findViewById(R.id.tvSignUp);
+        tvSignUp.setOnClickListener(v -> {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new RegisterFragment()) // nếu bạn dùng layout chứa fragment thì thay id ở đây
+                    .addToBackStack(null)
+                    .commit();
+        });
         initializeViews();
         setupViewModel();
         setupGoogleSignIn();
@@ -90,9 +107,34 @@ public class LoginActivity extends AppCompatActivity {
         // Login success
         authViewModel.loginSuccess.observe(this, loginResult -> {
             if (loginResult != null) {
-                Toast.makeText(this, "Đăng nhập thành công: " + loginResult.username, Toast.LENGTH_SHORT).show();
-                saveCredentials();
-                goToHome();
+                String username = edtUsername.getText().toString().trim();
+                String password = edtPassword.getText().toString().trim();
+
+                getEmailFromUsername(username, email -> {
+                    if (email == null || email.isEmpty() || password.isEmpty()) {
+                        Toast.makeText(this, "Email hoặc mật khẩu không hợp lệ", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                FirebaseAuth.getInstance()
+                        .signInWithEmailAndPassword(email, password)
+                        .addOnSuccessListener(authResult -> {
+                            // Lưu thông tin vào SharedPreferences
+                            SharedPreferences.Editor editor = userPrefs.edit();
+                            editor.putString("uid", loginResult.documentId);
+                            editor.putString("username", loginResult.username);
+                            editor.putString("Email", email);
+                            editor.putString("password", password);
+                            editor.apply();
+
+                            Toast.makeText(this, "Đăng nhập thành công: " + loginResult.username, Toast.LENGTH_SHORT).show();
+                            saveCredentials();
+                            goToHome();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Firebase Auth thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+                });
             }
         });
 
@@ -156,24 +198,47 @@ public class LoginActivity extends AppCompatActivity {
     private void saveCredentials() {
         SharedPreferences pref = getSharedPreferences("PREF", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
+        SharedPreferences.Editor editor2 = userPrefs.edit();
+        editor2.putString("password",edtPassword.getText().toString());
+        editor2.putString("username",edtUsername.getText().toString());
         editor.putString("username", edtUsername.getText().toString());
-
         if (chkRemember.isChecked()) {
             editor.putString("password", edtPassword.getText().toString());
         } else {
             editor.remove("password");
         }
-
+        editor2.apply();
         editor.apply();
     }
+    private void getEmailFromUsername(String username, EmailCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("User")
+                .whereEqualTo("Username", username)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot doc = querySnapshot.getDocuments().get(0);
+                        String email = doc.getString("Email");
+                        callback.onEmailFetched(email);
+                    } else {
+                        callback.onEmailFetched(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onEmailFetched(null);
+                });
+    }
 
+    public interface EmailCallback {
+        void onEmailFetched(String email);
+    }
     private void saveGoogleUserToPref(AuthViewModel.GoogleSignInResult result) {
         SharedPreferences.Editor editor = userPrefs.edit();
         editor.putString("uid", result.uid);
-        editor.putString("email", result.email);
-        editor.putString("displayName", result.displayName);
+        editor.putString("Email", result.email);
+        editor.putString("username", result.displayName);
         if (result.photoUrl != null) {
-            editor.putString("photoUrl", result.photoUrl);
+            editor.putString("avatarUrl", result.photoUrl);
         }
         editor.apply();
     }

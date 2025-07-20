@@ -17,6 +17,12 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    packaging{
+        resources{
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/NOTICE.md"
+        }
+    }
 
     buildTypes {
         release {
@@ -37,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation libs.android.mail
+    implementation libs.android.activation
     implementation platform('com.google.firebase:firebase-bom:33.15.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation "com.google.dagger:hilt-android:2.48"
