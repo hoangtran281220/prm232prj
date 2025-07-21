@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.model.Comic;
 import com.example.prm232rj.data.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +23,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -211,6 +216,27 @@ public class AuthService {
 
 
 
+    public void forgotPassword(String email, ForgotPasswordCallback callback) {
+        if (email == null || email.trim().isEmpty()) {
+            callback.onFailure("Vui lòng nhập địa chỉ email");
+            return;
+        }
+
+        auth.sendPasswordResetEmail(email.trim())
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        callback.onSuccess();
+                    } else {
+                        String error = task.getException() != null ? task.getException().getMessage() : "Đã xảy ra lỗi";
+                        callback.onFailure(error);
+                    }
+                });
+    }
+
+    public interface ForgotPasswordCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
     // Interfaces
     public interface RegisterCallback {
         void onSuccess();
