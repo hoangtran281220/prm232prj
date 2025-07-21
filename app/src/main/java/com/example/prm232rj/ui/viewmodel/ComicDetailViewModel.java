@@ -10,8 +10,10 @@ import com.example.prm232rj.data.firebase.ComicRemoteDataSource;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
 import com.example.prm232rj.data.model.Tag;
 import com.example.prm232rj.data.repository.ComicRepository;
+import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,7 +73,7 @@ public class ComicDetailViewModel extends ViewModel {
                 _isLoading.setValue(false);
                 if (result != null && !result.isEmpty()) {
                     _comic.setValue(result.get(0));
-
+                    repository.incrementComicViews(comicId);
                 } else {
                     _error.setValue("Không tìm thấy dữ liệu truyện");
                 }
@@ -134,6 +136,10 @@ public class ComicDetailViewModel extends ViewModel {
             });
         }
     }
+    public void rateComic(String comicId, String userId, double rating, OnCompleteListener<RatingResult> listener) {
+        repository.rateComic(comicId, userId, rating, listener);
+    }
+
 
     // Refresh data
     public void refresh(String comicId) {

@@ -12,13 +12,18 @@ public class Comic {
     private String CoverImage;
     private String Status;
     private double Rating;
+    private long RatingCount;
     private long Views;
     private List<String> TagId;
     private List<String> AuthorId;
     private Timestamp CreatedAt;
     private Timestamp UpdatedAt;
 
-    public Comic(String id, Timestamp updatedAt, Timestamp createdAt, List<String> authorId, List<String> tagId, long views, double rating, String status, String coverImage, String description, String title) {
+    private int CurrentChapter;
+
+    public Comic(String id, Timestamp updatedAt, Timestamp createdAt, List<String> authorId,
+                 List<String> tagId, long views, double rating, String status, String coverImage,
+                 String description, String title, int currentChapter, long ratingCount) {
         this.id = id;
         UpdatedAt = updatedAt;
         CreatedAt = createdAt;
@@ -30,9 +35,25 @@ public class Comic {
         CoverImage = coverImage;
         Description = description;
         Title = title;
+        CurrentChapter = currentChapter;
+        RatingCount = ratingCount;
     }
 
+    public long getRatingCount() {
+        return RatingCount;
+    }
 
+    public void setRatingCount(long ratingCount) {
+        RatingCount = ratingCount;
+    }
+
+    public int getCurrentChapter() {
+        return CurrentChapter;
+    }
+
+    public void setCurrentChapter(int currentChapter) {
+        CurrentChapter = currentChapter;
+    }
 
     public Comic() {
     }

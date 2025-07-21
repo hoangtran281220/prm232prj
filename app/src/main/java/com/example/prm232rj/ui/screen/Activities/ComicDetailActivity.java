@@ -1,17 +1,27 @@
 package com.example.prm232rj.ui.screen.Activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.RatingResult;
+import com.example.prm232rj.data.room.ReadHistoryEntity;
 import com.example.prm232rj.databinding.ActivityComicDetailBinding;
 import com.example.prm232rj.ui.adapter.ChapterAdapter;
 import com.example.prm232rj.ui.viewmodel.ComicDetailViewModel;
+import com.example.prm232rj.ui.viewmodel.FollowedComicsViewModel;
+import com.example.prm232rj.ui.viewmodel.ReadHistoryViewModel;
 
 import java.util.ArrayList;
 
@@ -23,16 +33,18 @@ public class ComicDetailActivity extends AppCompatActivity {
     private ComicDetailViewModel viewModel;
     private String comicId;
     private ChapterAdapter chapterAdapter;
+    private FollowedComicsViewModel followViewModel;
+    private boolean isFollowed = false;
 
+    private ReadHistoryViewModel historyViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityComicDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         // Khởi tạo ViewModel
         viewModel = new ViewModelProvider(this).get(ComicDetailViewModel.class);
-
+        historyViewModel = new ViewModelProvider(this).get(ReadHistoryViewModel.class);
         // Lấy comicId từ Intent
         comicId = getIntent().getStringExtra("COMIC_ID");
 
@@ -41,7 +53,14 @@ public class ComicDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
+        followViewModel = new ViewModelProvider(this).get(FollowedComicsViewModel.class);
 
+        // Gọi quan sát truyện đã theo dõi hay chưa
+        SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+        String uid = prefs.getString("uid", null);
+        if (uid != null) {
+            followViewModel.observeFollowedComics(uid);
+        }
         // Setup observers
         setupObservers();
 
@@ -52,6 +71,14 @@ public class ComicDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(ComicDetailActivity.this, ChapterActivity.class);
             intent.putExtra("COMIC_ID", comicId);
             intent.putExtra("CHAPTER_ID", chapter.getId());
+            ReadHistoryEntity entity = new ReadHistoryEntity();
+            entity.comicId = comicId;
+            entity.comicTitle = binding.getComic().getTitle();
+            entity.comicCoverUrl = binding.getComic().getCoverImage();
+            entity.chapterReading = chapter.getChapterNumber();
+            entity.lastReadAt = System.currentTimeMillis();
+            entity.chapterId = chapter.getId();
+            historyViewModel.saveHistory(entity);
             startActivity(intent);
         });
         binding.recyclerChapters.setAdapter(chapterAdapter); // ← Gán adapter ở đây
@@ -62,6 +89,32 @@ public class ComicDetailActivity extends AppCompatActivity {
     }
 
     private void setupObservers() {
+        followViewModel.getFollowedComics().observe(this, followedList -> {
+            if (followedList != null && !followedList.isEmpty()) {
+                boolean isFollowed = false;
+                for (var comic : followedList) {
+                    if (comic.getId().equals(comicId)) {
+                        isFollowed = true;
+                        break;
+                    }
+                }
+                updateFavoriteUI(isFollowed);
+            } else {
+                updateFavoriteUI(false);
+            }
+        });
+
+        followViewModel.getFollowSuccess().observe(this, success -> {
+            if (success != null && success) {
+                Toast.makeText(this, "Đã thêm vào danh sách theo dõi!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        followViewModel.getUnfollowSuccess().observe(this, success -> {
+            if (success != null && success) {
+                Toast.makeText(this, "Đã xoá khỏi danh sách theo dõi!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Observe comic data
         viewModel.getComic().observe(this, comic -> {
             if (comic != null) {
@@ -122,8 +175,92 @@ public class ComicDetailActivity extends AppCompatActivity {
         // Có thể thêm các sự kiện UI khác như:
         // - Button đọc truyện
         // - Button yêu thích
+        binding.btnFavorite.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+            String uid = prefs.getString("uid", null);
+
+            if (uid == null) {
+                showLoginRequiredDialog(); // ← Nếu chưa đăng nhập
+            } else {
+                // TODO: Xử lý thêm/trừ truyện vào danh sách follow
+                if (isFollowed) {
+                    followViewModel.unfollowComic(uid, comicId);
+                } else {
+                    followViewModel.followComic(uid, comicId);
+                }            }
+        });
+
+        //Button đánh giá
+        binding.btnRate.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+            String uid = prefs.getString("uid", null);
+
+            if (uid == null) {
+                showLoginRequiredDialog(); // ⛔ Nếu chưa đăng nhập
+            } else {
+                showRatingDialog(comicId, uid); // ✅ Hiển thị dialog đánh giá
+            }
+        });
         // - Swipe to refresh
         // - etc.
+    }
+
+    private void showRatingDialog(String comicId, String userId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Đánh giá truyện");
+
+        // Tạo RatingBar với step lẻ
+        RatingBar ratingBar = new RatingBar(this);
+        ratingBar.setNumStars(5);
+        ratingBar.setStepSize(0.1f); // ✅ Cho phép đánh giá lẻ như 3.4, 4.7
+        ratingBar.setRating(3.5f);
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setPadding(40, 30, 40, 10);
+        layout.setGravity(Gravity.CENTER);
+        layout.addView(ratingBar);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Gửi", (dialog, which) -> {
+            double rating = ratingBar.getRating();
+
+            // Gọi ViewModel/Repo để xử lý rating
+            viewModel.rateComic(comicId, userId, rating, task -> {
+                if (task.isSuccessful()) {
+                    RatingResult result = task.getResult();
+                    double newAvg = result.getAverage();
+                    long newCount = result.getCount();
+                    Toast.makeText(this, "Cảm ơn bạn! Rating mới: " + newAvg, Toast.LENGTH_SHORT).show();
+
+                    // 👉 Cập nhật lại UI nếu cần
+                    Comic comic = binding.getComic();
+                    if (comic != null) {
+                        comic.setRating(newAvg);
+                        comic.setRatingCount(newCount);
+                        binding.setComic(comic);
+                        binding.executePendingBindings();
+                    }
+                    SharedPreferences prefs = getSharedPreferences("APP_PREF", MODE_PRIVATE);
+                    prefs.edit().putBoolean("should_refresh_home", true).apply();
+
+                } else {
+                    Toast.makeText(this, "Đánh giá thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        builder.setNegativeButton("Huỷ", null);
+        builder.show();
+    }
+
+    private void updateFavoriteUI(boolean followed) {
+        isFollowed = followed;
+        if (followed) {
+            binding.btnFavorite.setText("Đã yêu thích ❤️");
+        } else {
+            binding.btnFavorite.setText("Yêu thích");
+        }
     }
 
     @Override
@@ -137,4 +274,12 @@ public class ComicDetailActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;
     }
+    private void showLoginRequiredDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Tính năng này yêu cầu đăng nhập.")
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
 }

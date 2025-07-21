@@ -1,10 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Màu chính -->
+    <color name="primary_color">#FF6B35</color>
+    <color name="primary_dark">#E55A2E</color>
+    <color name="accent_color">#FFA726</color>
+
+    <!-- Màu nền -->
+    <color name="background_color">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+
+    <!-- Màu text -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+
+    <!-- Màu khác -->
+    <color name="divider_color">#E0E0E0</color>
+    <color name="shadow_color">#1A000000</color>
+
+    <!-- Status colors -->
+    <color name="success_color">#4CAF50</color>
+    <color name="warning_color">#FF9800</color>
+    <color name="error_color">#F44336</color>
+
+    <!--login colors-->
+    <color name="login_primary">#5E3581</color>
+    <color name="login_secondary">#673AB7</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
     <color name="rating_star">#FFD700</color>
     <color name="status_color">#4CAF50</color>
     <color name="tag_text_color">#6200EE</color>
+
+
+    <!-- Màu nền mặc định của chip (nhạt hơn) -->
+    <color name="chip_default_background">#E0E0E0</color> <!-- light gray -->
+
 </resources>

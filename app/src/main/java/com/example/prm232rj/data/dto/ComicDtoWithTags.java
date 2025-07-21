@@ -10,7 +10,8 @@ public class ComicDtoWithTags implements IComicPreview {
     private String CoverImage;
     private String Status;
     private double Rating;
-
+    private long RatingCount;
+    private int CurrentChapter;
     private String Id;
     private List<String> tagIds;
 
@@ -39,7 +40,8 @@ public class ComicDtoWithTags implements IComicPreview {
     }
 
     public ComicDtoWithTags(String title, String coverImage, String status, double rating,
-                            List<String> tagIds, String id, long views, Timestamp updatedAt) {
+                            List<String> tagIds, String id, long views, Timestamp updatedAt,
+                            int currentChapter, long ratingCount) {
         this.Title = title;
         this.CoverImage = coverImage;
         this.Status = status;
@@ -48,7 +50,11 @@ public class ComicDtoWithTags implements IComicPreview {
         this.Id = id;
         this.Views = views;
         this.UpdatedAt = updatedAt;
+        this.CurrentChapter = currentChapter;
+        this.RatingCount = ratingCount;
     }
+    @Override
+    public long getRatingCount(){return RatingCount;}
 
     @Override
     public String getId() {
@@ -74,6 +80,10 @@ public class ComicDtoWithTags implements IComicPreview {
     }
     public List<String> getTagIds() {
         return tagIds;
+    }
+    @Override
+    public int getCurrentChapter(){
+        return CurrentChapter;
     }
 
     // Setters

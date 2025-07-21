@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.prm232rj.R;
+import com.example.prm232rj.databinding.FragmentMyFavoriteBinding;
+import com.google.android.material.tabs.TabLayout;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -16,6 +18,7 @@ import com.example.prm232rj.R;
  * create an instance of this fragment.
  */
 public class MyFavoriteFragment extends Fragment {
+    private FragmentMyFavoriteBinding binding;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -61,6 +64,29 @@ public class MyFavoriteFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_my_favorite, container, false);
+        binding = FragmentMyFavoriteBinding.inflate(inflater, container, false);
+        replaceFragment(new HistoryReadingFragment());
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Đang đọc"));
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Theo dõi"));
+        binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0)
+                    replaceFragment(new HistoryReadingFragment());
+                else
+                    replaceFragment(new ComicsFavoriteFragment());
+            }
+
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+        return binding.getRoot();
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        getChildFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
     }
 }

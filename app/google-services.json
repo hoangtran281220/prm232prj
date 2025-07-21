@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "332618593014",
+    "firebase_url": "https://fir-prm-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "fir-prm",
     "storage_bucket": "fir-prm.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.prm232rj"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "332618593014-ttp861lt1hjba0g1q3nvgmlc0ntvclhk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.prm232rj",
+            "certificate_hash": "94c0388f70cbf86cede059b5b036eb884f6d2939"
+          }
+        },
+        {
+          "client_id": "332618593014-t0q3lnk6topakcnkrd5hdf0vv1ksruon.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAZD0SDxf42OjI7EtgeUVzPodfhZQwyfUc"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "332618593014-t0q3lnk6topakcnkrd5hdf0vv1ksruon.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

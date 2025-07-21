@@ -1,0 +1,67 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="history"
+            type="com.example.prm232rj.data.room.ReadHistoryEntity" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <!-- Ảnh bìa truyện -->
+        <ImageView
+            android:id="@+id/imageCover"
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            app:imageUrl="@{history.comicCoverUrl}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Tên truyện -->
+        <TextView
+            android:id="@+id/textTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{history.comicTitle}"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/imageCover"
+            app:layout_constraintTop_toTopOf="@id/imageCover"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="12dp" />
+
+        <!-- Đọc tới chương -->
+        <TextView
+            android:id="@+id/textChapterReading"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text='@{"Chapter " + String.valueOf(history.chapterReading)}'
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            app:layout_constraintStart_toStartOf="@id/textTitle"
+            app:layout_constraintTop_toBottomOf="@id/textTitle" />
+
+        <!-- Thời gian đọc -->
+        <TextView
+            android:id="@+id/textLastReadTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/imageCover"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:formatTime="@{history.lastReadAt}"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

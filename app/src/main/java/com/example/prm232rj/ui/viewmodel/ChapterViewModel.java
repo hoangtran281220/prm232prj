@@ -20,6 +20,10 @@ public class ChapterViewModel extends ViewModel {
     private final MutableLiveData<List<ChapterReadingDto>> chapters = new MutableLiveData<>();
     private String comicId;
 
+    public String getComicId() {
+        return comicId;
+    }
+
     @Inject
     public ChapterViewModel(ComicRepository repository) {
         this.repository = repository;
@@ -40,11 +44,12 @@ public class ChapterViewModel extends ViewModel {
     }
 
     public void loadChapter(String chapterId) {
-        repository.getChapterByIdForReading(comicId, chapterId, new FirebaseCallback<ChapterReadingDto>() {
+        repository.getChapterByIdForReading(comicId, chapterId, new FirebaseCallback<>() {
             @Override
             public void onComplete(List<ChapterReadingDto> result) {
                 if (!result.isEmpty()) {
                     currentChapter.postValue(result.get(0));
+                    repository.incrementChapterViews(chapterId);
                 }
             }
 
@@ -56,7 +61,7 @@ public class ChapterViewModel extends ViewModel {
     }
 
     public void loadAllChapters() {
-        repository.getAllChapters(comicId, new FirebaseCallback<ChapterReadingDto>() {
+        repository.getAllChapters(comicId, new FirebaseCallback<>() {
             @Override
             public void onComplete(List<ChapterReadingDto> result) {
                 chapters.postValue(result);

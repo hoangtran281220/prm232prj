@@ -1,26 +1,41 @@
 package com.example.prm232rj.data.firebase;
 
+import android.app.Activity;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.example.prm232rj.data.dto.ChapterReadingDto;
 import com.example.prm232rj.data.dto.ComicDtoBanner;
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.dto.ComicDtoWithTags;
+import com.example.prm232rj.data.dto.TagDto;
+import com.example.prm232rj.data.dto.UserDto;
 import com.example.prm232rj.data.model.Author;
 import com.example.prm232rj.data.model.Chapter;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.Comment;
+import com.example.prm232rj.data.model.RatingResult;
+import com.example.prm232rj.data.model.Reply;
 import com.example.prm232rj.data.model.Tag;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,16 +44,24 @@ import javax.inject.Singleton;
 public class ComicRemoteDataSource {
     private final FirebaseFirestore db;
     private static final String TAG = "ComicRemoteDataSource";
+
+
     @Inject
     public ComicRemoteDataSource() {
         this.db = FirebaseFirestore.getInstance();
     }
-    public void getComicBanners(FirebaseCallback<ComicDtoBanner> callback) {
-        db.collection("comics")
+
+    //test real time firestore
+    public ListenerRegistration getComicBanners(Activity activity, FirebaseCallback<ComicDtoBanner> callback) {
+        return db.collection("comics")
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .limit(5)
-                .get()
-                .addOnSuccessListener(snapshot -> {
+                .addSnapshotListener(activity, (snapshot, error) -> {
+                    if (error != null || snapshot == null) {
+                        callback.onFailure(error);
+                        return;
+                    }
+
                     List<ComicDtoBanner> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot) {
                         String image = doc.getString("CoverImage");
@@ -46,16 +69,15 @@ public class ComicRemoteDataSource {
                         String id = doc.getId();
                         Long viewsObj = doc.getLong("Views");
                         long views = viewsObj != null ? viewsObj : 0;
-                        if (image != null && !image.isEmpty() && title != null && !title.isEmpty())
-                        {
+
+                        if (image != null && !image.isEmpty() && title != null && !title.isEmpty()) {
                             result.add(new ComicDtoBanner(image, title, id, views));
                         }
                     }
                     callback.onComplete(result);
-                })
-                .addOnFailureListener(callback::onFailure);
-
+                });
     }
+
 
     public void getComicPreviews(FirebaseCallback<ComicDtoPreview> callback) {
         db.collection("comics")
@@ -70,7 +92,13 @@ public class ComicRemoteDataSource {
                         String status = doc.getString("Status");
                         String cover = doc.getString("CoverImage");
                         String title = doc.getString("Title");
+                        long ratingCount = doc.getLong("RatingCount");
                         String id = doc.getId();
+                        int currentChapter = 0;
+                        Number num = doc.get("CurrentChapter", Number.class);
+                        if (num != null) {
+                            currentChapter = num.intValue();
+                        }
                         Timestamp timestamp = doc.getTimestamp("UpdatedAt");
                         if (rating != null && title != null && cover != null) {
                             result.add(new ComicDtoPreview(
@@ -79,7 +107,9 @@ public class ComicRemoteDataSource {
                                     cover,
                                     status != null ? status : "",
                                     id,
-                                    timestamp
+                                    timestamp,
+                                    currentChapter,
+                                    ratingCount
                             ));
                         }
                     }
@@ -89,84 +119,190 @@ public class ComicRemoteDataSource {
 
     }
 
-    public void getComicsHotTop3(FirebaseCallback<ComicDtoWithTags> callback){
-        db.collection("comics")
+    //top manga hot ở home page
+    public ListenerRegistration getComicsHotTop3(Activity activity, FirebaseCallback<ComicDtoWithTags> callback) {
+        return db.collection("comics")
                 .orderBy("UpdatedAt", Query.Direction.DESCENDING)
                 .orderBy("Views", Query.Direction.DESCENDING)
                 .orderBy("Rating", Query.Direction.DESCENDING)
-                .limit(3) // Có thể giới hạn số lượng
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    List<ComicDtoWithTags> result = new ArrayList<>();
-                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        result.add(comic);
+                .limit(9)
+                .addSnapshotListener(activity, (snapshot, error) -> {
+                    if (error != null) {
+                        Log.e("getComicsHotTop3", "Lỗi khi lắng nghe dữ liệu Firestore", error);
+                        callback.onFailure(error);
+                        return;
                     }
-                    callback.onComplete(result);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
-                    callback.onFailure(e);
-                });
-    }
 
-    public void getComicsByTagIds(List<String> tagIds, FirebaseCallback<ComicDtoWithTags> callback) {
-
-        if (tagIds == null || tagIds.isEmpty()) {
-
-            // Trường hợp không có tag: fallback theo UpdatedAt, Rating, View giảm dần
-            db.collection("comics")
-                    .orderBy("UpdatedAt", Query.Direction.DESCENDING)
-                    .orderBy("Views", Query.Direction.DESCENDING)
-                    .orderBy("Rating", Query.Direction.DESCENDING)
-                    .limit(20) // Có thể giới hạn số lượng
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
+                    if (snapshot != null) {
                         List<ComicDtoWithTags> result = new ArrayList<>();
                         for (DocumentSnapshot doc : snapshot.getDocuments()) {
                             ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                            result.add(comic);
+                            if (comic != null) {
+                                if (comic.getId() == null) {
+                                    comic.setId(doc.getId()); // ✅ Gán document ID vào đối tượng
+                                }
+                                result.add(comic);
+                            }
                         }
+
                         callback.onComplete(result);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("getComicsByTagIds", "Lỗi khi truy vấn Firestore", e);
-                        callback.onFailure(e);
-                    });
-            return;
+                    } else {
+                        callback.onComplete(Collections.emptyList());
+                    }
+                });
+    }
+
+    //list truyện hot
+    public void getComicsFallback(@Nullable DocumentSnapshot lastVisible, int pageSize, FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics")
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .limit(pageSize);
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
         }
 
-        // Nếu có tagIds thì dùng whereArrayContainsAny (tối đa 10 phần tử)
-        if (tagIds.size() > 10) {
-            callback.onFailure(new IllegalArgumentException("Không được truyền quá 10 tagId"));
-            return;
-        }
-        db.collection("comics")
-                .whereArrayContainsAny("TagId", tagIds)
-                .get()
+        query.get()
                 .addOnSuccessListener(snapshot -> {
                     List<ComicDtoWithTags> result = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
-                        result.add(comic);
+                        if (comic != null) {
+                            if (comic.getId() == null) comic.setId(doc.getId());
+                            result.add(comic);
+                        }
                     }
 
-                    result.sort((a, b) -> {
-                        int r = Double.compare(b.getRating(), a.getRating());
-                        if (r != 0) return r;
-
-                        r = Long.compare(b.getViews(), a.getViews());
-                        if (r != 0) return r;
-
-                        if (b.getUpdatedAt() != null && a.getUpdatedAt() != null)
-                            return b.getUpdatedAt().compareTo(a.getUpdatedAt());
-
-                        return 0;
-                    });
-                    callback.onComplete(result);
+                    DocumentSnapshot newLastVisible = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLastVisible);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    //list paging(phân trang)
+    public void getComicsByTagIdPaging(String tagId, @Nullable DocumentSnapshot lastVisible, int pageSize, FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics")
+                .whereArrayContains("TagId", tagId)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .limit(pageSize);
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
+        query.get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+
+                    DocumentSnapshot newLast = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLast);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+    //filter
+    public void getFilteredComics(List<String> tagIds, String status, String sortBy,
+                                  @Nullable DocumentSnapshot lastVisible, int pageSize,
+                                  FirebasePagingCallback<ComicDtoWithTags> callback) {
+        Query query = db.collection("comics");
+
+        // 1. Filter theo tagIds nếu có
+        if (tagIds != null && !tagIds.isEmpty()) {
+            if (tagIds.size() > 10) {
+                callback.onFailure(new IllegalArgumentException("Không được truyền quá 10 tagId"));
+                return;
+            }
+            query = query.whereArrayContainsAny("TagId", tagIds);
+        }
+
+        // 2. Filter theo status nếu không phải là "Tất cả"
+        if (status != null && !status.equalsIgnoreCase("all")) {
+            query = query.whereEqualTo("Status", status);
+        }
+
+        // 3. Order by duy nhất theo sortBy
+        switch (sortBy != null ? sortBy : "") {
+            case "Rating":
+                query = query.orderBy("Rating", Query.Direction.DESCENDING);
+                break;
+            case "Views":
+                query = query.orderBy("Views", Query.Direction.DESCENDING);
+                break;
+            case "UpdatedAt":
+            default:
+                query = query.orderBy("UpdatedAt", Query.Direction.DESCENDING);
+                break;
+        }
+
+        // 4. Pagination
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible);
+        }
+
+        query = query.limit(pageSize);
+
+        // 5. Execute
+        query.get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+                    DocumentSnapshot newLastVisible = snapshot.isEmpty() ? null : snapshot.getDocuments().get(snapshot.size() - 1);
+                    callback.onComplete(result, newLastVisible);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+    //cho list để get top manga theo từng tagid
+    public ListenerRegistration getComicsByTagIdTop(Activity activity, String tagId, FirebaseCallback<ComicDtoWithTags> callback) {
+        return db.collection("comics")
+                .whereArrayContains("TagId", tagId)
+                .orderBy("Rating", Query.Direction.DESCENDING)
+                .orderBy("Views", Query.Direction.DESCENDING)
+                .orderBy("UpdatedAt", Query.Direction.DESCENDING)
+                .limit(8)
+                .addSnapshotListener(activity, (snapshot, error) -> {
+                    if (error != null) {
+                        callback.onFailure(error);
+                        return;
+                    }
+
+                    if (snapshot != null && !snapshot.isEmpty()) {
+                        List<ComicDtoWithTags> result = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                            if (comic != null) {
+                                if (comic.getId() == null) {
+                                    comic.setId(doc.getId()); // Gán document ID vào đối tượng
+                                }
+                                result.add(comic);
+                            }
+                        }
+                        callback.onComplete(result);
+                    } else {
+                        callback.onComplete(Collections.emptyList());
+                    }
+                });
+    }
+
+
 
     public void getRecentComics(int limit, FirebaseCallback<Comic> callback) {
         db.collection("comics")
@@ -339,13 +475,392 @@ public class ComicRemoteDataSource {
                 });
     }
 
+    public void getAllTags(FirebaseCallback<TagDto> callback) {
+        db.collection("Tags")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<TagDto> tagList = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String id = doc.getId();
+                        String name = doc.getString("Name");
+
+                        if (name != null) {
+                            tagList.add(new TagDto(id, name));
+                        }
+                    }
+                    callback.onComplete(tagList);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getComicsByIds(List<String> comicIds, FirebaseCallback<ComicDtoPreview> callback) {
+        if (comicIds == null || comicIds.isEmpty()) {
+            callback.onComplete(new ArrayList<>());
+            return;
+        }
+
+        List<ComicDtoPreview> allResults = new ArrayList<>();
+        List<List<String>> batches = new ArrayList<>();
+        for (int i = 0; i < comicIds.size(); i += 10) {
+            int end = Math.min(i + 10, comicIds.size());
+            batches.add(comicIds.subList(i, end));
+        }
+
+        int totalBatches = batches.size();
+        int[] completed = {0};
+        boolean[] hasFailed = {false};
+
+        for (List<String> batch : batches) {
+            db.collection("comics")
+                    .whereIn(FieldPath.documentId(), batch)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            ComicDtoPreview comic = doc.toObject(ComicDtoPreview.class);
+                            if (comic != null) {
+                                comic.setId(doc.getId());
+                                allResults.add(comic);
+                            }
+                        }
+                        completed[0]++;
+                        if (completed[0] == totalBatches && !hasFailed[0]) {
+                            allResults.sort(Comparator.comparingInt(c -> comicIds.indexOf(c.getId())));
+                            callback.onComplete(allResults);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (!hasFailed[0]) {
+                            hasFailed[0] = true;
+                            callback.onFailure(e);
+                        }
+                    });
+        }
+    }
+    //danh sách follow
+    public ListenerRegistration observeFollowedComicsRealtime(String userId, FirebaseCallback<ComicDtoPreview> callback) {
+        return db.collection("User")
+                .document(userId)
+                .collection("followed_comics")
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    List<String> comicIds = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        comicIds.add(doc.getId()); // dùng ID document là comicId
+                    }
+
+                    // Truy xuất chi tiết comic từ danh sách ID
+                    getComicsByIds(comicIds, new ComicRemoteDataSource.FirebaseCallback<>() {
+                        @Override
+                        public void onComplete(List<ComicDtoPreview> result) {
+                            callback.onComplete(result);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            callback.onFailure(e);
+                        }
+                    });
+                });
+    }
+
+    //cập nhật views
+    public void incrementComicViews(String comicId) {
+        DocumentReference comicRef = db.collection("comics").document(comicId);
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(comicRef);
+            Long currentViews = snapshot.getLong("Views");
+            if (currentViews == null) currentViews = 0L;
+            transaction.update(comicRef, "Views", currentViews + 1);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Đã cập nhật views cho comic: " + comicId);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Lỗi cập nhật views comic " + comicId + ": " + e.getMessage());
+        });
+    }
+
+    public void incrementChapterViews(String chapterId) {
+        DocumentReference chapterRef = db.collection("chapters").document(chapterId);
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(chapterRef);
+            Long currentViews = snapshot.getLong("Views");
+            if (currentViews == null) currentViews = 0L;
+            transaction.update(chapterRef, "Views", currentViews + 1);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Đã cập nhật views cho chapter: " + chapterId);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Lỗi cập nhật views chapter " + chapterId + ": " + e.getMessage());
+        });
+    }
+
+    public void rateComic(String comicId, String userId, double newRating, OnCompleteListener<RatingResult> listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference comicRef = db.collection("comics").document(comicId);
+        DocumentReference userRatingRef = comicRef.collection("userRatings").document(userId);
+
+        db.runTransaction(transaction -> {
+            // Lấy dữ liệu comic
+            DocumentSnapshot comicSnap = transaction.get(comicRef);
+            if (!comicSnap.exists()) {
+                throw new FirebaseFirestoreException("Comic not found",
+                        FirebaseFirestoreException.Code.NOT_FOUND);
+            }
+
+            // Lấy rating hiện tại của comic
+            double ratingAvg = comicSnap.contains("Rating") ? comicSnap.getDouble("Rating") : 0.0;
+            long ratingCount = comicSnap.contains("RatingCount") ? comicSnap.getLong("RatingCount") : 0;
+
+            // Lấy dữ liệu rating trước của user
+            DocumentSnapshot userRatingSnap = transaction.get(userRatingRef);
+            double updatedAvg;
+
+            if (userRatingSnap.exists()) {
+                // Re-rating
+                double oldRating = userRatingSnap.getDouble("rating");
+                updatedAvg = ((ratingAvg * ratingCount) - oldRating + newRating) / ratingCount;
+            } else {
+                // Rating lần đầu
+                updatedAvg = ((ratingAvg * ratingCount) + newRating) / (ratingCount + 1);
+                ratingCount += 1;
+            }
+
+            // Ghi user rating
+            Map<String, Object> userRating = new HashMap<>();
+            userRating.put("rating", newRating);
+            userRating.put("timestamp", FieldValue.serverTimestamp());
+            transaction.set(userRatingRef, userRating);
+
+            // Cập nhật comic
+            Map<String, Object> comicUpdate = new HashMap<>();
+            comicUpdate.put("Rating", updatedAvg);
+            comicUpdate.put("RatingCount", ratingCount);
+            transaction.update(comicRef, comicUpdate);
+
+            return new RatingResult(updatedAvg, ratingCount);
+        }).addOnCompleteListener(listener);
+    }
+    //add comment
+    public void addCommentToChapter(
+            String chapterId,
+            String userId,
+            String userName,
+            String avatarUrl,
+            String content,
+            FirestoreCallbackComment callback
+    ) {
+        // Tạo comment object
+        Comment comment = new Comment(
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                Timestamp.now()
+        );
+
+        // Đưa lên Firestore theo path: chapters/{chapterId}/comments
+        db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .add(comment)
+                .addOnSuccessListener(documentReference -> {
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    //get all comments
+
+
+    public ListenerRegistration listenToRootComments(String chapterId, FirebaseCallback<Comment> callback) {
+        return FirebaseFirestore.getInstance()
+                .collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    List<Comment> result = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            Comment cmt = doc.toObject(Comment.class);
+                            if (cmt != null) {
+                                cmt.setId(doc.getId());
+                                result.add(cmt);
+                            }
+                        }
+                    }
+
+                    callback.onComplete(result);
+                });
+    }
 
 
 
+
+
+
+    public void addReplyToComment(
+            String chapterId,
+            String commentId,         // comment gốc (conversation)
+            String replyId,           //id của reply đc reply
+            String userId,            // user gửi reply
+            String userName,
+            String avatarUrl,
+            String content,
+            String replyName,
+            String userReplyId,     // userId của người bị rep (không bao giờ null)
+            FirestoreCallbackComment callback
+    ) {
+        Reply reply = new Reply(
+                commentId,          // conversationId = ID của comment gốc
+                replyId,      // id của reply được reply
+                userId,
+                userName,
+                avatarUrl,
+                content,
+                Timestamp.now(),
+                replyName,
+                userReplyId
+        );
+
+        db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .add(reply)
+                .addOnSuccessListener(docRef -> {
+                    reply.setId(docRef.getId());
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+    public ListenerRegistration getRepliesRealtime(
+            String chapterId,
+            String commentId,
+            FirebaseCallback<Reply> callback
+    ) {
+        ListenerRegistration listener = db.collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null || snapshots == null) {
+                        callback.onFailure(error);
+                        return;
+                    }
+
+                    List<Reply> replies = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Reply reply = doc.toObject(Reply.class);
+                        if (reply != null) {
+                            reply.setId(doc.getId());
+                            replies.add(reply);
+                        }
+                    }
+
+                    callback.onComplete(replies);
+                });
+
+        return listener;
+    }
+
+    public void getUser(String userId, FirestoreCallbackOne<UserDto> callback) {
+        db.collection("User")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("Username");
+                        String avatarUrl = documentSnapshot.getString("avatarUrl");
+
+                        UserDto userDTO = new UserDto(userId, username, avatarUrl);
+                        callback.onSuccess(userDTO);
+                    } else {
+                        callback.onFailure(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getReplyCount(String chapterId, String commentId, FirestoreCallbackOne<Integer> callback) {
+        FirebaseFirestore.getInstance()
+                .collection("chapters")
+                .document(chapterId)
+                .collection("comments")
+                .document(commentId)
+                .collection("replies")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    callback.onSuccess(querySnapshot.size());
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void searchComicsByTitleContains(String keyword, FirebaseCallback<ComicDtoWithTags> callback) {
+        db.collection("comics")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ComicDtoWithTags> result = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        ComicDtoWithTags comic = doc.toObject(ComicDtoWithTags.class);
+                        if (comic != null && comic.getTitle() != null &&
+                                comic.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
+                            comic.setId(doc.getId());
+                            result.add(comic);
+                        }
+                    }
+                    Log.d("mytest","size:"+result.size());
+                    callback.onComplete(result);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+
+    public interface FirestoreCallbackOne<T> {
+        void onSuccess(T result);
+        void onFailure(Exception e);
+    }
     public interface FirebaseCallback<T> {
         void onComplete(List<T> result);
         void onFailure(Exception e);
     }
+
+    public interface FirestoreCallbackComment {
+        void onSuccess();
+        void onFailure(Exception e);
+    }
+
+    public interface FirebasePagingCallback<T> {
+        void onComplete(List<T> result, @Nullable DocumentSnapshot lastVisible);
+        void onFailure(Exception e);
+    }
+    public interface RealtimeComicCallback {
+        void onSuccess(List<ComicDtoPreview> comics);
+        void onFailure(Exception e);
+    }
+
+    public interface FirebaseCommentPagingCallback {
+        void onPage(List<Comment> comments, @Nullable DocumentSnapshot lastVisible);
+        void onError(Exception e);
+    }
+
 }
 
 

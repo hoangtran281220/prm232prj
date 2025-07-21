@@ -83,14 +83,13 @@
                             android:layout_height="16dp"
                             android:layout_marginEnd="4dp"
                             android:src="@android:drawable/btn_star_big_on"
-                            android:tint="@android:color/holo_orange_light" />
+                            app:tint="@android:color/holo_orange_light" />
 
                         <TextView
                             android:id="@+id/textRating"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@{String.valueOf(comic.rating)}"
-                            android:textSize="16sp"
+                            android:text='@{String.format("%.1f", comic.rating)}'                            android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="4.5" />
 
@@ -116,7 +115,7 @@
                             android:layout_height="16dp"
                             android:layout_marginEnd="4dp"
                             android:src="@android:drawable/ic_menu_view"
-                            android:tint="@android:color/darker_gray" />
+                            app:tint="@android:color/darker_gray" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -129,22 +128,43 @@
                     </LinearLayout>
 
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/textStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/status_background"
+                        android:padding="8dp"
+                        android:text="@{comic.status}"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="Đang tiến hành" />
 
+                    <!-- View đệm để đẩy Button sang phải -->
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <Button
+                        android:id="@+id/btnRate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:padding="8dp"
+                        android:text="Đánh giá"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:backgroundTint="@color/purple_500"/>
+                </LinearLayout>
                 <!-- Status -->
-                <TextView
-                    android:id="@+id/textStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/status_background"
-                    android:padding="8dp"
-                    android:text="@{comic.status}"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="Đang tiến hành" />
 
-                <!-- Description -->
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -178,7 +198,7 @@
                         android:layout_height="20dp"
                         android:layout_marginEnd="8dp"
                         android:src="@drawable/ic_author"
-                        android:tint="@color/text_secondary"
+                        app:tint="@color/text_secondary"
                         tools:ignore="MissingConstraints" />
 
                     <TextView
@@ -204,7 +224,7 @@
                         android:layout_height="20dp"
                         android:layout_marginEnd="8dp"
                         android:src="@drawable/ic_tag"
-                        android:tint="@color/text_secondary"
+                        app:tint="@color/text_secondary"
                         tools:ignore="MissingConstraints" />
 
                     <TextView

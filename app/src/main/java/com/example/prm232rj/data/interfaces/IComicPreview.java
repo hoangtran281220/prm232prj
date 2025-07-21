@@ -4,6 +4,8 @@ public interface IComicPreview {
     String getId();
     String getTitle();
     String getCoverImage();
-    String getStatus();     // optional
+    String getStatus();
     double getRating();
+    int getCurrentChapter();
+    long getRatingCount();
 }

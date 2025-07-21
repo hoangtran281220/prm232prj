@@ -1,10 +1,16 @@
 package com.example.prm232rj.utils;
 
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.databinding.BindingAdapter;
 
 import com.bumptech.glide.Glide;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class BindingAdapters {
     @BindingAdapter("imageUrl")
@@ -12,5 +18,24 @@ public class BindingAdapters {
         Glide.with(view.getContext())
                 .load(url)
                 .into(view);
+    }
+
+    @BindingAdapter("formatTime")
+    public static void formatTime(TextView textView, long timestamp) {
+        if (timestamp > 0) {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault());
+            String time = sdf.format(new Date(timestamp));
+            textView.setText(time);
+        }
+    }
+
+    @BindingAdapter("replyCountText")
+    public static void setReplyCountText(TextView view, int replyCount) {
+        if (replyCount <= 0) {
+            view.setVisibility(View.GONE);
+        } else {
+            view.setVisibility(View.VISIBLE);
+            view.setText("Phản hồi (" + replyCount + ")");
+        }
     }
 }
