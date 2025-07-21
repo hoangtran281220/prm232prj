@@ -1,7 +1,14 @@
 package com.example.prm232rj.data.firebase;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.example.prm232rj.data.dto.ComicDtoPreview;
 import com.example.prm232rj.data.model.Comic;
+import com.example.prm232rj.data.model.User;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -11,7 +18,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +33,7 @@ import javax.inject.Singleton;
 public class AuthService {
     private final FirebaseAuth auth;
     private final FirebaseFirestore db;
+    private Context mContext;
     @Inject
     public AuthService() {
         this.auth = FirebaseAuth.getInstance();
@@ -32,7 +42,6 @@ public class AuthService {
     //register người dùng với username, password
     public void registerWithUsernameOnly(String username, String password, RegisterCallback callback) {
         String fakeEmail = username + "@fakeapp.com"; //email ảo để lưu trên firebase auth
-
         //tạo email ảo
         auth.createUserWithEmailAndPassword(fakeEmail, password)
                 .addOnCompleteListener(task -> {
@@ -68,21 +77,67 @@ public class AuthService {
     public void loginWithFirestore(String username, String password, LoginCallback callback) {
         db.collection("User")
                 .whereEqualTo("Username", username)
-                .whereEqualTo("Password", password)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
-                        String displayName = document.getString("Username");
-                        String documentId = document.getId();
-                        callback.onSuccess(documentId, displayName);
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        String linkedProvider = document.getString("linkedProvider");
+
+                        // Xác định email nào sẽ dùng để đăng nhập
+                        String loginEmail;
+                        if ("email".equals(linkedProvider)) {
+                            loginEmail = document.getString("Email"); // Lấy email thật từ Firestore
+                            if (loginEmail == null || loginEmail.isEmpty()) {
+                                callback.onFailure("Tài khoản không có email thật.");
+                                return;
+                            }
+                        } else if ("password".equals(linkedProvider)) {
+                            loginEmail = username + "@fakeapp.com"; // email ảo
+                        } else {
+                            callback.onFailure("Loại tài khoản không được hỗ trợ.");
+                            return;
+                        }
+
+                        // Đăng nhập với email xác định và password
+                        auth.signInWithEmailAndPassword(loginEmail, password)
+                                .addOnSuccessListener(authResult -> {
+                                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                                    if (firebaseUser != null) {
+                                        callback.onSuccess(firebaseUser.getUid(), username);
+                                    } else {
+                                        callback.onFailure("Không lấy được người dùng sau khi đăng nhập.");
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    callback.onFailure("Sai mật khẩu hoặc lỗi đăng nhập: " + e.getMessage());
+                                });
                     } else {
-                        callback.onFailure("Sai tên đăng nhập hoặc mật khẩu");
+                        callback.onFailure("Không tìm thấy người dùng.");
                     }
                 })
-                .addOnFailureListener(e -> callback.onFailure("Lỗi khi đăng nhập: " + e.getMessage()));
+                .addOnFailureListener(e -> {
+                    callback.onFailure("Lỗi truy vấn Firestore: " + e.getMessage());
+                });
     }
 
+    private void saveUserToPref(User user) {
+        SharedPreferences userPrefs;
+        userPrefs = this.mContext.getSharedPreferences("USER_PREF", MODE_PRIVATE);
+        SharedPreferences.Editor editor = userPrefs.edit();
+        editor.putString("Email", user.Email != null ? user.Email : "");
+        editor.putString("Username", user.Username != null ? user.Username : "");
+        editor.putString("avatarUrl", user.avatarUrl != null ? user.avatarUrl : "");
+        editor.putInt("RoleId", user.RoleId != 0 ? user.RoleId : 0);
+        // isEmailLinked
+        editor.putBoolean("isEmailLinked", user.isEmailLinked );
+        // linkedProvider
+        editor.putString("linkedProvider", user.linkedProvider != null ? user.linkedProvider : "");
+
+        if (user.Password != null) {
+            editor.putString("Password", user.Password);
+        }
+        editor.apply();
+    }
     // Google Sign-in method
     public void signInWithGoogle(String idToken, GoogleSignInCallback callback) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
