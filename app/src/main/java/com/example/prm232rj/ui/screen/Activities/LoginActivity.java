@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.prm232rj.data.model.User;
+import com.example.prm232rj.ui.screen.Fragments.ForgotPasswordFragment;
 import com.example.prm232rj.ui.screen.Fragments.RegisterFragment;
 import com.example.prm232rj.ui.viewmodel.AuthViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -56,6 +57,14 @@ public class LoginActivity extends AppCompatActivity {
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(android.R.id.content, new RegisterFragment()) // nếu bạn dùng layout chứa fragment thì thay id ở đây
+                    .addToBackStack(null)
+                    .commit();
+        });
+        TextView tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        tvForgotPassword.setOnClickListener(v -> {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new ForgotPasswordFragment()) // thay fragment hiện tại bằng forgot password
                     .addToBackStack(null)
                     .commit();
         });

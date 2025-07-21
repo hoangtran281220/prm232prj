@@ -2,20 +2,33 @@ package com.example.prm232rj.ui.screen.Fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.prm232rj.R;
+import com.example.prm232rj.ui.viewmodel.AuthViewModel;
+import com.google.android.material.button.MaterialButton;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link ForgotPasswordFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+@AndroidEntryPoint
 public class ForgotPasswordFragment extends Fragment {
+    private AuthViewModel authViewModel;
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,7 +40,7 @@ public class ForgotPasswordFragment extends Fragment {
     private String mParam2;
 
     public ForgotPasswordFragment() {
-        // Required empty public constructor
+
     }
 
     /**
@@ -62,5 +75,28 @@ public class ForgotPasswordFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_forgot_password, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        EditText emailEditText = view.findViewById(R.id.ediEmail);
+        MaterialButton sendButton = view.findViewById(R.id.btnSend);
+
+        sendButton.setOnClickListener(v -> {
+            String email = emailEditText.getText().toString().trim();
+
+            if (isValidEmail(email)) {
+                authViewModel.forgotPassword(email);
+            } else {
+                Toast.makeText(getContext(), "Invalid email address", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 }

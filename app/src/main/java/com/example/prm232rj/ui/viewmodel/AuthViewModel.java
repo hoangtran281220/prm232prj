@@ -38,13 +38,15 @@ public class AuthViewModel extends ViewModel {
 
     private final MutableLiveData<String> _googleSignInError = new MutableLiveData<>();
     public LiveData<String> googleSignInError = _googleSignInError;
+    private final MutableLiveData<String> _forgotPasswordResult = new MutableLiveData<>();
+    public LiveData<String> forgotPasswordResult = _forgotPasswordResult;
     @Inject
     public AuthViewModel(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
 
-    public void register(String username, String password) {
+    public void register(String username, String password)  {
         authRepository.registerWithUsername(username, password, new AuthService.RegisterCallback() {
             @Override
             public void onSuccess() {
@@ -90,7 +92,19 @@ public class AuthViewModel extends ViewModel {
             }
         });
     }
+    public void forgotPassword(String email) {
+        authRepository.forgotPassword(email, new AuthService.ForgotPasswordCallback() {
+            @Override
+            public void onSuccess() {
+                _forgotPasswordResult.postValue("Đã gửi email đặt lại mật khẩu");
+            }
 
+            @Override
+            public void onFailure(String message) {
+                _forgotPasswordResult.postValue("Lỗi: " + message);
+            }
+        });
+    }
     // Data classes
     public static class LoginResult {
         public final String documentId;

@@ -1,5 +1,7 @@
 package com.example.prm232rj.data.repository;
 
+import android.content.Context;
+
 import com.example.prm232rj.data.firebase.AuthService;
 
 import javax.inject.Inject;
@@ -30,6 +32,8 @@ public class AuthRepository {
     public void unfollowComic(String userId, String comicId, AuthService.FirebaseCallbackUser<Void> callback) {
         authService.unfollowComic(userId, comicId, callback);
     }
-
+    public void forgotPassword(String email, AuthService.ForgotPasswordCallback callback) {
+        authService.forgotPassword(email, callback);
+    }
 
 }
