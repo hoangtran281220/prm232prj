@@ -124,10 +124,10 @@ public class AuthService {
         SharedPreferences userPrefs;
         userPrefs = this.mContext.getSharedPreferences("USER_PREF", MODE_PRIVATE);
         SharedPreferences.Editor editor = userPrefs.edit();
-        editor.putString("Email", user.Email != null ? user.Email : "");
-        editor.putString("Username", user.Username != null ? user.Username : "");
-        editor.putString("avatarUrl", user.avatarUrl != null ? user.avatarUrl : "");
-        editor.putInt("RoleId", user.RoleId != 0 ? user.RoleId : 0);
+        editor.putString("Email", user.getEmail() != null ? user.getEmail() : "");
+        editor.putString("Username", user.getUsername() != null ? user.getUsername() : "");
+        editor.putString("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
+        editor.putInt("RoleId", user.getRoleId() != 0 ? user.getRoleId() : 0);
         // isEmailLinked
         editor.putBoolean("isEmailLinked", user.isEmailLinked );
         // linkedProvider
