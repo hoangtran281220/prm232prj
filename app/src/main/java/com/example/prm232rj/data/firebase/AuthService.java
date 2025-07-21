@@ -19,6 +19,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import android.content.SharedPreferences;
 import java.util.ArrayList;
@@ -104,6 +105,12 @@ public class AuthService {
                                     FirebaseUser firebaseUser = auth.getCurrentUser();
                                     if (firebaseUser != null) {
                                         callback.onSuccess(firebaseUser.getUid(), username);
+                                        FirebaseMessaging.getInstance().getToken()
+                                                .addOnSuccessListener(token -> {
+                                                    db.collection("User")
+                                                            .document(firebaseUser.getUid())
+                                                            .update("fcmToken", token);
+                                                });
                                     } else {
                                         callback.onFailure("Không lấy được người dùng sau khi đăng nhập.");
                                     }
@@ -120,24 +127,6 @@ public class AuthService {
                 });
     }
 
-    private void saveUserToPref(User user) {
-        SharedPreferences userPrefs;
-        userPrefs = this.mContext.getSharedPreferences("USER_PREF", MODE_PRIVATE);
-        SharedPreferences.Editor editor = userPrefs.edit();
-        editor.putString("Email", user.getEmail() != null ? user.getEmail() : "");
-        editor.putString("Username", user.getUsername() != null ? user.getUsername() : "");
-        editor.putString("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
-        editor.putInt("RoleId", user.getRoleId() != 0 ? user.getRoleId() : 0);
-        // isEmailLinked
-        editor.putBoolean("isEmailLinked", user.isEmailLinked );
-        // linkedProvider
-        editor.putString("linkedProvider", user.linkedProvider != null ? user.linkedProvider : "");
-
-        if (user.Password != null) {
-            editor.putString("Password", user.Password);
-        }
-        editor.apply();
-    }
     // Google Sign-in method
     public void signInWithGoogle(String idToken, GoogleSignInCallback callback) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
@@ -175,9 +164,23 @@ public class AuthService {
 
                         db.collection("User").document(uid)
                                 .set(userMap)
-                                .addOnSuccessListener(aVoid -> callback.onSuccess(uid, user.getDisplayName(), user.getEmail(), user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null))
+                                .addOnSuccessListener(aVoid -> {
+                                    FirebaseMessaging.getInstance().getToken()
+                                            .addOnSuccessListener(token -> {
+                                                db.collection("User").document(uid)
+                                                        .update("fcmToken", token);
+                                            });
+
+                                    callback.onSuccess(uid, user.getDisplayName(), user.getEmail(), user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
+
+                                })
                                 .addOnFailureListener(e -> callback.onFailure("Lỗi tạo user Firestore"));
                     } else {
+                        FirebaseMessaging.getInstance().getToken()
+                                .addOnSuccessListener(token -> {
+                                    db.collection("User").document(uid)
+                                            .update("fcmToken", token);
+                                });
                         callback.onSuccess(uid, user.getDisplayName(), user.getEmail(), user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
                     }
                 })

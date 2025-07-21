@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import com.example.prm232rj.MainActivity;
@@ -17,10 +18,26 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        if (remoteMessage.getNotification() != null) {
-            showNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+        // 🔹 Log để kiểm tra nhận được gì
+        Log.d("FCM", "Received message: " + remoteMessage.getData());
+
+        // 🔸 Ưu tiên xử lý data payload (gửi từ Cloud Functions)
+        if (!remoteMessage.getData().isEmpty()) {
+            String title = remoteMessage.getData().get("title");
+            String body = remoteMessage.getData().get("body");
+
+            showNotification(title, body);
+        }
+
+        // 🔸 Fallback nếu có notification payload (gửi từ Firebase Console)
+        else if (remoteMessage.getNotification() != null) {
+            showNotification(
+                    remoteMessage.getNotification().getTitle(),
+                    remoteMessage.getNotification().getBody()
+            );
         }
     }
+
 
     private void showNotification(String title, String message) {
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
