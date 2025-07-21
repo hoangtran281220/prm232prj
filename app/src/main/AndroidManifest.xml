@@ -37,10 +37,20 @@
             <!-- Chạy LoginActivity đầu tiên -->
 
         </activity>
+        <activity
+            android:name=".ui.screen.Activities.ConfirmEmailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.screen.Activities.NotificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.screen.Activities.UploadAvatarActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.screen.Activities.RegisterActivity"
             android:exported="true" />
+        <activity android:name=".ui.screen.Activities.ChangeProfileActivity" />
 
         <activity
             android:name=".ui.screen.Activities.HomeActivity"
