@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import com.example.prm232rj.MainActivity;
 import com.example.prm232rj.R;
+import com.example.prm232rj.ui.screen.Activities.ComicDetailActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -18,28 +19,30 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // 🔹 Log để kiểm tra nhận được gì
         Log.d("FCM", "Received message: " + remoteMessage.getData());
 
-        // 🔸 Ưu tiên xử lý data payload (gửi từ Cloud Functions)
+        // 🔹 Nếu có data payload (từ Cloud Function)
         if (!remoteMessage.getData().isEmpty()) {
             String title = remoteMessage.getData().get("title");
             String body = remoteMessage.getData().get("body");
+            String comicId = remoteMessage.getData().get("comicId");
 
-            showNotification(title, body);
+            showNotification(title, body, comicId); // truyền comicId vào
         }
 
-        // 🔸 Fallback nếu có notification payload (gửi từ Firebase Console)
+        // 🔸 Nếu là từ Firebase Console (không có data)
         else if (remoteMessage.getNotification() != null) {
             showNotification(
                     remoteMessage.getNotification().getTitle(),
-                    remoteMessage.getNotification().getBody()
+                    remoteMessage.getNotification().getBody(),
+                    null  // không có comicId
             );
         }
     }
 
 
-    private void showNotification(String title, String message) {
+
+    private void showNotification(String title, String message, String comicId) {
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -48,7 +51,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             manager.createNotificationChannel(channel);
         }
 
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent;
+        if (comicId != null && !comicId.isEmpty()) {
+            intent = new Intent(this, ComicDetailActivity.class);
+            intent.putExtra("COMIC_ID", comicId); // 👈 đúng tên key
+        } else {
+            intent = new Intent(this, MainActivity.class);
+        }
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
@@ -61,4 +73,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         manager.notify((int) System.currentTimeMillis(), builder.build());
     }
+
+
 }
