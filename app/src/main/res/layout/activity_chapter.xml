@@ -79,7 +79,6 @@
             android:id="@+id/comment_count_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{String.valueOf(count)}'
             android:textColor="@android:color/white"
             android:paddingStart="6dp"
             android:textStyle="bold"/>
